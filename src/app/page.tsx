@@ -1,13 +1,20 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMutation, useQuery } from "convex/react";
-import { SubmitEvent, useState } from "react";
-
+import { useMutation } from "convex/react";
+import { useConvexAuth } from "@convex-dev/auth/react";
+import { SubmitEvent, useEffect, useState } from "react";
 import { api } from "../../convex/_generated/api";
+import { IoPerson } from "react-icons/io5";
 
 export default function Home() {
 	const router = useRouter();
+	const { isAuthenticated, isLoading } = useConvexAuth();
+
+	useEffect(() => {
+		if (!isLoading && !isAuthenticated) { router.replace("/auth"); }
+	}, [isAuthenticated, isLoading, router]);
+
 	const createGame = useMutation(api.games.create);
 	const joinGame = useMutation(api.games.join);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -15,17 +22,22 @@ export default function Home() {
 	const [pin, setPin] = useState<string>("");
 	const [isJoining, setIsJoining] = useState<boolean>(false);
 
-	if (isJoining) {
+	if (isLoading) {
 		return (
 			<main className="flex min-h-screen w-full flex-col p-8">
-				<h1 className="text-center text-2xl font-extrabold my-auto">Joining game...</h1>
+				<h1 className="my-auto text-center text-2xl font-bold">Checking session...</h1>
 			</main>
-		)
+		);
 	}
 
+	if (!isAuthenticated) {
+		return null;
+	}
+
+	
 	const handleJoining = async (event: SubmitEvent<HTMLFormElement>) => {
 		event.preventDefault();
-
+		
 		const trimmedPin = pin.trim();
 		if (!trimmedPin) {
 			setErrorMessage("Enter a PIN code before joining.");
@@ -35,10 +47,10 @@ export default function Home() {
 			setErrorMessage("Enter a PIN code that is 6 characters long.");
 			return;
 		}
-
+		
 		setIsJoining(true);
 		setErrorMessage(null);
-
+		
 		try {
 			const res = await joinGame({ pin: trimmedPin });
 			router.push(`/game/${res.pin}`);
@@ -48,7 +60,15 @@ export default function Home() {
 			setIsJoining(false);
 		}
 	}
-
+	
+	if (isJoining) {
+		return (
+			<main className="flex min-h-screen w-full flex-col p-8">
+				<h1 className="my-auto text-center text-2xl font-bold">Joining game...</h1>
+			</main>
+		)
+	}
+	
 	const handleCreating = async () => {
 		try {
 			const res = await createGame();
@@ -60,14 +80,18 @@ export default function Home() {
 
 	return (
 		<main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-6 p-8">
-			<header className="space-y-3">
-				<h1 className="text-3xl font-bold text-center">Bussikuski</h1>
+			<header className="space-y-2">
+				<h1 className="text-4xl font-bold text-center mt-1.5">Bussikuski</h1>
 				<p className="max-w-1xl text-sm text-zinc-500 text-center">
 					Jägershotti on 12
 				</p>
 			</header>
 
-			<div className="rounded-2xl bg-white py-4 px-8 text-black shadow-sm">
+			<div className="absolute w-[50] h-[50] bg-white right-8 rounded-full">
+				<IoPerson color="gray" size={45} className="m-auto" onClick={() => router.push("/profile")} />
+			</div>
+
+			<div className="rounded-2xl bg-white py-4 px-8 mt-4 text-black shadow-sm">
 				<h2 className="text-2xl font-semibold">Join Game</h2>
 				<p className="mt-1 text-sm">
 					Join a game that your friend created by entering it&apos;s PIN code, or create a new game below.
@@ -94,14 +118,12 @@ export default function Home() {
 				{errorMessage && <p className="mt-3 text-sm text-red-600">{errorMessage}</p>}
 			</div>
 
-			<div>
-				<button
-					className="w-full rounded-2xl bg-white py-4 px-8 text-black text-2xl font-semibold transition hover:bg-zinc-300"
-					onClick={handleCreating}
-				>
-					Create Game
-				</button>
-			</div>
+			<button
+				className="w-full rounded-2xl bg-white py-4 px-8 text-black text-2xl font-semibold transition hover:bg-zinc-300"
+				onClick={handleCreating}
+			>
+				Create Game
+			</button>
 		</main>
 	);
 }
