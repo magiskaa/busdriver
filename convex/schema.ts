@@ -19,6 +19,8 @@ export default defineSchema({
     }).index("by_userId", ["userId"]),
     games: defineTable({
         pin: v.string(),
-        status: v.union(v.literal("active"), v.literal("finished")),
+        status: v.union(v.literal("waiting"), v.literal("active"), v.literal("finished")),
+        host: v.id("users"),
+        players: v.array(v.id("users")),
     }).index("by_pin", ["pin"]),
 });

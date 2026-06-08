@@ -18,8 +18,8 @@ export default function AuthForm() {
 
     if (isLoading || isSubmitting) {
         return (
-            <main className="flex min-h-screen w-full flex-col p-8">
-                <h1 className="my-auto text-center text-2xl font-bold">
+            <main className="flex min-h-screen w-full flex-col items-center justify-center p-8">
+                <h1 className="text-2xl font-bold">
                     {isSubmitting ? "Signing you in..." : "Checking session..."}
                 </h1>
             </main>

@@ -8,7 +8,7 @@ export const get = query({
     handler: async (ctx, args) => {
         return await ctx.db
             .query("stats")
-            .filter((query) => query.eq(query.field("userId"), args.userId))
+            .withIndex("by_userId", (query) => query.eq("userId", args.userId))
             .unique();
     },
 });
@@ -25,10 +25,20 @@ export const update = mutation({
     handler: async (ctx, args) => {
         const statsDoc = await ctx.db
             .query("stats")
-            .filter((query) => query.eq(query.field("userId"), args.userId))
+            .withIndex("by_userId", (query) => query.eq("userId", args.userId))
             .unique();
 
-        if (!statsDoc) { throw new Error("Stats not found."); }
+        if (!statsDoc) {
+            await ctx.db.insert("stats", {
+                userId: args.userId,
+                games: args.games,
+                lostGames: args.lostGames,
+                sipsRecieved: args.sipsRecieved,
+                sipsGiven: args.sipsGiven,
+                drivingSips: args.drivingSips,
+            });
+            return;
+        }
 
         await ctx.db.patch(statsDoc._id, {
             games: statsDoc.games + args.games,

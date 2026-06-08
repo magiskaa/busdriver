@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { useConvexAuth, useAuthActions } from "@convex-dev/auth/react";
 import { useEffect } from "react";
 import { api } from "../../../convex/_generated/api";
@@ -11,14 +11,15 @@ export default function Home() {
     const router = useRouter();
     const { isAuthenticated, isLoading } = useConvexAuth();
     const { signOut } = useAuthActions();
-    const getUser = useQuery(api.users.get, !isLoading && isAuthenticated ? {} : "skip");
     
     useEffect(() => {
         if (!isLoading && !isAuthenticated) { router.replace("/auth"); }
     }, [isAuthenticated, isLoading, router]);
     
     const getUserId = useQuery(api.users.userId, !isLoading && isAuthenticated ? {} : "skip");
+    const getUser = useQuery(api.users.get, !isLoading && isAuthenticated ? {} : "skip");
     const getStats = useQuery(api.stats.get, getUserId ? { userId: getUserId } : "skip");
+    const updateStats = useMutation(api.stats.update);
 
     if (isLoading) {
         return (
@@ -47,7 +48,7 @@ export default function Home() {
                 <IoArrowBack color="black" size={50} className="m-auto" onClick={() => router.push("/")} />
             </div>
 
-            <div className="rounded-xl bg-white p-8 mt-4 text-black shadow-sm flex flex-col gap-8">
+            <div className="rounded-xl bg-white p-8 mt-4 text-black flex flex-col gap-8">
                 <div className="flex items-center gap-8">
                     <div className="w-[120px] h-[120px] bg-gray-300 rounded-full flex">
                         <IoPerson color="gray" size={100} className="m-auto" onClick={() => router.push("/profile")} />
