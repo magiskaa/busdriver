@@ -22,5 +22,6 @@ export default defineSchema({
         status: v.union(v.literal("waiting"), v.literal("active"), v.literal("finished")),
         host: v.id("users"),
         players: v.array(v.id("users")),
+        ready: v.array(v.id("users")),
     }).index("by_pin", ["pin"]),
 });

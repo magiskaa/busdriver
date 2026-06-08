@@ -45,6 +45,10 @@ export default function Home() {
 			setErrorMessage("Joining the game failed. Sign out and log in again.");
 			return;
 		}
+		if (ongoingGame) {
+			setErrorMessage("You can't join another game, join to the ongoing game from below.");
+			return;
+		}
 
 		const trimmedPin = pin.trim();
 		if (!trimmedPin) {
@@ -80,6 +84,10 @@ export default function Home() {
 	const handleCreating = async () => {
 		if (!getUserId) {
 			setErrorMessage("Creating the game failed. Sign out and log in again.");
+			return;
+		}
+		if (ongoingGame) {
+			setErrorMessage("You can't create a game, join to the ongoing game from below.");
 			return;
 		}
 
@@ -128,7 +136,7 @@ export default function Home() {
 					<button
 						className="bg-green-600 text-white px-4 py-2 mt-2 rounded-xl font-bold text-2xl shadow-lg shadow-green-900/30 transition-all hover:bg-green-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-zinc-400"
 						type="submit"
-						disabled={isJoining}
+						disabled={isJoining || ongoingGame ? true : false}
 					>
 						{isJoining ? "Joining..." : "Join"}
 					</button>
@@ -147,7 +155,7 @@ export default function Home() {
 					disabled={ongoingGame ? true : false}
 					onClick={handleCreating}
 				>
-					{ongoingGame ? "Join the ongoing game" : "Create game"}
+					Create
 				</button>
 			</div>
 
@@ -161,7 +169,7 @@ export default function Home() {
 					disabled={!ongoingGame}
 					onClick={handleOngoing}
 				>
-					{ongoingGame ? "Join" : "No ongoing game found"}
+					{ongoingGame ? "Join" : "No ongoing game"}
 				</button>
 			</div>
 		</main>

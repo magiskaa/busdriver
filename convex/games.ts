@@ -23,10 +23,16 @@ export const getGame = query({
 });
 
 export const getPlayers = query({
-	args: { 
-		ids: v.array(v.id("users")) 
+	args: {
+		pin: v.string(),
+		ids: v.array(v.id("users")),
 	},
 	handler: async (ctx, args) => {
+		const game = await ctx.db
+			.query("games")
+			.withIndex("by_pin", (query) => query.eq("pin", args.pin))
+			.unique();
+
 		const players = await Promise.all(
 			args.ids.map(async (id) => {
 				const user = await ctx.db.get(id);
@@ -41,6 +47,7 @@ export const getPlayers = query({
 					...user,
 					games: stats?.games ?? 0n,
 					lostGames: stats?.lostGames ?? 0n,
+					ready: game?.ready.includes(id),
 				};
 			})
 		);
@@ -67,6 +74,7 @@ export const create = mutation({
 			status: "waiting",
 			host: args.userId,
 			players: [args.userId],
+			ready: [],
 		});
 
 		return { pin };
@@ -131,5 +139,32 @@ export const ongoing = query({
 		
 		const game = games.find(g => g.players.includes(args.userId));
 		return game ? game.pin : null;
+	},
+});
+
+export const ready = mutation({
+	args: {
+		pin: v.string(),
+		id: v.id("users"),
+	},
+	handler: async (ctx, args) => {
+		const game = await ctx.db
+			.query("games")
+			.withIndex("by_pin", (query) => query.eq("pin", args.pin))
+			.unique();
+
+		if (!game) { throw new Error("Game not found."); }
+
+		if (game.ready.includes(args.id)) {
+			await ctx.db.patch(game._id, {
+				ready: game.ready.filter((id) => id !== args.id),
+			});
+			return false;
+		} else {
+			await ctx.db.patch(game._id, {
+				ready: [...game.ready, args.id],
+			});
+			return true;
+		}
 	},
 });

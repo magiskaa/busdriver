@@ -44,11 +44,11 @@ export default function Home() {
                 </p>
             </header>
 
-            <div className="absolute w-[50px] h-[50px] bg-white left-8 rounded-full">
+            <div className="absolute w-[50px] h-[50px] bg-white left-8 top-9 rounded-full">
                 <IoArrowBack color="black" size={50} className="m-auto" onClick={() => router.push("/")} />
             </div>
 
-            <div className="rounded-xl bg-white p-8 mt-4 text-black flex flex-col gap-8">
+            <div className="rounded-xl bg-white p-8 mt-2 text-black flex flex-col gap-8">
                 <div className="flex items-center gap-8">
                     <div className="w-[120px] h-[120px] bg-gray-300 rounded-full flex">
                         <IoPerson color="gray" size={100} className="m-auto" onClick={() => router.push("/profile")} />
@@ -87,7 +87,7 @@ export default function Home() {
             </div>
 
             <button
-                className="bg-red-600 text-white px-4 py-3 mt-2 rounded-xl font-bold text-2xl shadow-lg shadow-red-900/60 transition-all hover:bg-red-700 active:scale-[0.98]"
+                className="bg-red-600 text-white px-4 py-3 rounded-xl font-bold text-2xl shadow-lg shadow-red-900/60 transition-all hover:bg-red-700 active:scale-[0.98]"
                 onClick={() => signOut()}
             >
                 Sign out
