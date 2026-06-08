@@ -13,9 +13,7 @@ export default function AuthForm() {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
-        if (!isLoading && isAuthenticated) {
-            router.replace("/");
-        }
+        if (!isLoading && isAuthenticated) { router.replace("/"); }
     }, [isAuthenticated, isLoading, router]);
 
     if (isLoading || isSubmitting) {
@@ -29,9 +27,10 @@ export default function AuthForm() {
     }
 
     return (
-        <div className="flex min-h-screen w-full flex-col p-8">
+        <main className="flex min-h-screen w-full flex-col items-center justify-center p-8">
+            <h1 className="text-6xl font-black text-center mb-12">Busdriver</h1>
             <form
-                className="bg-white my-auto min-h-[300] grid gap-2 rounded-2xl"
+                className="bg-white w-full max-w-md p-8 grid gap-4 rounded-xl shadow-xl"
                 onSubmit={async (e) => {
                     e.preventDefault();
                     const formData = new FormData(e.currentTarget);
@@ -42,7 +41,9 @@ export default function AuthForm() {
                     try {
                         const result = await signIn("password", formData);
 
-                        if (!result.signingIn) {
+                        if (result.signingIn) {
+                            router.replace("/");
+                        } else {
                             setErrorMessage("Authentication failed.");
                         }
                     } catch {
@@ -52,35 +53,35 @@ export default function AuthForm() {
                     }
                 }}
             >
-                <h1 className="text-black text-center mt-8 my-auto text-4xl font-bold">{step === "signIn" ? "Sign in" : "Sign up"}</h1>
+                <h2 className="text-black text-center text-3xl font-bold mb-4">{step === "signIn" ? "Sign in" : "Sign up"}</h2>
                 
-                <input className="bg-black px-4 py-2 mx-8 mt-4 rounded-lg" name="email" type="text" placeholder="Email" />
-                {step === "signUp" ? (
-                    <input className="bg-black px-4 py-2 mx-8 rounded-lg" name="username" type="text" placeholder="Username" />
-                ) : (null)}
-                <input className="bg-black px-4 py-2 mx-8 rounded-lg" name="password" type="password" placeholder="password" />
+                <input className="bg-zinc-100 text-black px-4 py-3 rounded-xl border border-zinc-200 outline-none focus:ring-2 focus:ring-green-500 transition-all" name="email" type="email" placeholder="Email" required />
+                {step === "signUp" && (
+                    <input className="bg-zinc-100 text-black px-4 py-3 rounded-xl border border-zinc-200 outline-none focus:ring-2 focus:ring-green-500 transition-all" name="username" type="text" placeholder="Username" required />
+                )}
+                <input className="bg-zinc-100 text-black px-4 py-3 rounded-xl border border-zinc-200 outline-none focus:ring-2 focus:ring-green-500 transition-all" name="password" type="password" placeholder="Password" required />
                 <input name="flow" type="hidden" value={step} />
                 
                 <button
-                    className="bg-green-700 px-4 py-2 mx-8 mt-4 rounded-lg"
+                    className="bg-green-600 text-white px-4 py-3 mt-2 rounded-xl font-bold text-lg shadow-lg shadow-green-900/30 transition-all hover:bg-green-700 active:scale-[0.98] disabled:opacity-50"
                     type="submit"
                     disabled={isSubmitting}
                 >
-                    {isSubmitting ? "Submitting..." : "Submit"}
+                    {isSubmitting ? "Submitting..." : "Continue"}
                 </button>
                 <button
-                    className="text-blue-700 px-4 py-2 mx-8 mt-2 mb-4"
+                    className="text-zinc-500 text-sm font-medium hover:text-green-600 transition-colors"
                     type="button"
                     disabled={isSubmitting}
                     onClick={() => setStep(step === "signIn" ? "signUp" : "signIn")}
                 >
-                    {step === "signIn" ? "Sign up instead" : "Sign in instead"}
+                    {step === "signIn" ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
                 </button>
 
                 {errorMessage && (
-                    <p className="mx-8 mb-6 text-sm text-red-600">{errorMessage}</p>
+                    <p className="text-center text-sm font-semibold text-red-500 mt-2">{errorMessage}</p>
                 )}
             </form>
-        </div>
+        </main>
     )
 }

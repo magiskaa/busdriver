@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { useConvexAuth } from "@convex-dev/auth/react";
 import { SubmitEvent, useEffect, useState } from "react";
 import { api } from "../../convex/_generated/api";
@@ -10,6 +10,7 @@ import { IoPerson } from "react-icons/io5";
 export default function Home() {
 	const router = useRouter();
 	const { isAuthenticated, isLoading } = useConvexAuth();
+	useQuery(api.users.get, !isLoading && isAuthenticated ? {} : "skip");
 
 	useEffect(() => {
 		if (!isLoading && !isAuthenticated) { router.replace("/auth"); }
@@ -17,6 +18,7 @@ export default function Home() {
 
 	const createGame = useMutation(api.games.create);
 	const joinGame = useMutation(api.games.join);
+
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 	
 	const [pin, setPin] = useState<string>("");
@@ -79,27 +81,27 @@ export default function Home() {
 	}
 
 	return (
-		<main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-6 p-8">
+		<main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-8 p-8">
 			<header className="space-y-2">
-				<h1 className="text-4xl font-bold text-center mt-1.5">Bussikuski</h1>
+				<h1 className="text-5xl font-bold text-center mt-1.5">Busdriver</h1>
 				<p className="max-w-1xl text-sm text-zinc-500 text-center">
-					Jägershotti on 12
+					Jägershot is 12
 				</p>
 			</header>
 
-			<div className="absolute w-[50] h-[50] bg-white right-8 rounded-full">
-				<IoPerson color="gray" size={45} className="m-auto" onClick={() => router.push("/profile")} />
+			<div className="absolute w-[50px] h-[50px] bg-white right-8 rounded-full flex">
+				<IoPerson color="gray" size={42} className="m-auto" onClick={() => router.push("/profile")} />
 			</div>
 
-			<div className="rounded-2xl bg-white py-4 px-8 mt-4 text-black shadow-sm">
-				<h2 className="text-2xl font-semibold">Join Game</h2>
-				<p className="mt-1 text-sm">
+			<div className="rounded-xl bg-white py-4 px-8 mt-4 text-black shadow-sm">
+				<h2 className="text-3xl font-bold">Join Game</h2>
+				<p className="mt-3 mb-6 text-sm">
 					Join a game that your friend created by entering it&apos;s PIN code, or create a new game below.
 				</p>
 
-				<form className="mt-4 flex flex-col gap-3 sm:flex-row" onSubmit={handleJoining}>
+				<form className="mt-4 flex flex-col gap-4" onSubmit={handleJoining}>
 					<input
-						className="min-w-0 flex-1 rounded-xl border border-zinc-300 px-4 py-3 outline-none transition focus:border-zinc-900"
+						className="bg-zinc-100 text-black px-4 py-3 rounded-xl border border-zinc-200 outline-none focus:ring-2 focus:ring-green-500 transition-all"
 						name="text"
 						placeholder="PIN code"
 						value={pin}
@@ -107,7 +109,7 @@ export default function Home() {
 						disabled={isJoining}
 					/>
 					<button
-						className="rounded-xl bg-black py-2 px-10 font-semibold text-white transition hover:bg-zinc-700 disabled:cursor-not-allowed disabled:bg-zinc-400"
+						className="bg-green-600 text-white px-4 py-2 mt-2 rounded-xl font-bold text-2xl shadow-lg shadow-green-900/30 transition-all hover:bg-green-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-zinc-400"
 						type="submit"
 						disabled={isJoining}
 					>
@@ -119,7 +121,7 @@ export default function Home() {
 			</div>
 
 			<button
-				className="w-full rounded-2xl bg-white py-4 px-8 text-black text-2xl font-semibold transition hover:bg-zinc-300"
+				className="bg-green-600 text-white px-4 py-3 mt-2 rounded-xl font-bold text-2xl shadow-lg shadow-green-900/60 transition-all hover:bg-green-700 active:scale-[0.98]"
 				onClick={handleCreating}
 			>
 				Create Game

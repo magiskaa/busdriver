@@ -9,6 +9,14 @@ export default defineSchema({
         username: v.optional(v.string()),
         image: v.optional(v.string()),
     }).index("by_username", ["username"]),
+    stats: defineTable({
+        userId: v.id("users"),
+        games: v.int64(),
+        lostGames: v.int64(),
+        sipsRecieved: v.int64(),
+        sipsGiven: v.int64(),
+        drivingSips: v.int64(),
+    }).index("by_userId", ["userId"]),
     games: defineTable({
         pin: v.string(),
         status: v.union(v.literal("active"), v.literal("finished")),
