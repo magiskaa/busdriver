@@ -75,7 +75,7 @@ export default function ProfilePage() {
                         Lost games: <strong>{getStats?.lostGames?.toString() || 0}</strong>
                     </p>
                     <p className="text-xl">
-                        Sips recieved: <strong>{getStats?.sipsRecieved?.toString() || 0}</strong>
+                        Sips received: <strong>{getStats?.sipsReceived?.toString() || 0}</strong>
                     </p>
                     <p className="text-xl">
                         L%: <strong>{getStats ? Number((getStats.lostGames * 100n) / (getStats.games || 1n)) : 0}%</strong>

@@ -13,7 +13,7 @@ export default defineSchema({
         userId: v.id("users"),
         games: v.int64(),
         lostGames: v.int64(),
-        sipsRecieved: v.int64(),
+        sipsReceived: v.int64(),
         sipsGiven: v.int64(),
         drivingSips: v.int64(),
     }).index("by_userId", ["userId"]),
@@ -32,7 +32,7 @@ export default defineSchema({
         }))),
         sips: v.optional(v.array(v.object({
             userId: v.id("users"),
-            sipsRecieved: v.int64(),
+            sipsReceived: v.int64(),
             sipsGiven: v.int64(),
         }))),
         loser: v.optional(v.object({

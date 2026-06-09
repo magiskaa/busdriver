@@ -18,7 +18,7 @@ export const update = mutation({
         userId: v.id("users"),
         games: v.int64(),
         lostGames: v.int64(),
-        sipsRecieved: v.int64(),
+        sipsReceived: v.int64(),
         sipsGiven: v.int64(),
         drivingSips: v.int64(),
     },
@@ -33,7 +33,7 @@ export const update = mutation({
                 userId: args.userId,
                 games: args.games,
                 lostGames: args.lostGames,
-                sipsRecieved: args.sipsRecieved,
+                sipsReceived: args.sipsReceived,
                 sipsGiven: args.sipsGiven,
                 drivingSips: args.drivingSips,
             });
@@ -43,7 +43,7 @@ export const update = mutation({
         await ctx.db.patch(statsDoc._id, {
             games: statsDoc.games + args.games,
             lostGames: statsDoc.lostGames + args.lostGames,
-            sipsRecieved: statsDoc.sipsRecieved + args.sipsRecieved,
+            sipsReceived: statsDoc.sipsReceived + args.sipsReceived,
             sipsGiven: statsDoc.sipsGiven + args.sipsGiven,
             drivingSips: statsDoc.drivingSips + args.drivingSips,
         });

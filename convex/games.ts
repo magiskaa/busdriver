@@ -95,6 +95,7 @@ export const join = mutation({
 
 		if (!game) { throw new Error("Game not found."); }
 		if (game.status === "finished" || game.status === "active") { throw new Error("Game is either in progress or finished.") }
+		if (game.players.length > 6) { throw new Error("Game is full."); }
 
 		ctx.db.patch(game._id, {
 			players: [...game.players, args.player],
@@ -351,13 +352,13 @@ export const distributeSips = mutation({
 			if (assignment.userId === args.giverId) {
 				sips.push({
 					userId: assignment.userId,
-					sipsRecieved: (userSips?.sipsRecieved ?? 0n) + BigInt(assignment.sips),
+					sipsReceived: (userSips?.sipsReceived ?? 0n) + BigInt(assignment.sips),
 					sipsGiven: (userSips?.sipsGiven ?? 0n) + BigInt(args.total),
 				});
 			} else {
 				sips.push({
 					userId: assignment.userId,
-					sipsRecieved: (userSips?.sipsRecieved ?? 0n) + BigInt(assignment.sips),
+					sipsReceived: (userSips?.sipsReceived ?? 0n) + BigInt(assignment.sips),
 					sipsGiven: userSips?.sipsGiven ?? 0n,
 				});
 			}
