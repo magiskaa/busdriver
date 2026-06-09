@@ -23,5 +23,21 @@ export default defineSchema({
         host: v.id("users"),
         players: v.array(v.id("users")),
         ready: v.array(v.id("users")),
+        deck: v.optional(v.array(v.string())),
+        board: v.optional(v.array(v.string())),
+        revealed: v.optional(v.array(v.number())),
+        playerHands: v.optional(v.array(v.object({
+            userId: v.id("users"),
+            cards: v.array(v.string()),
+        }))),
+        sips: v.optional(v.array(v.object({
+            userId: v.id("users"),
+            sipsRecieved: v.int64(),
+            sipsGiven: v.int64(),
+        }))),
+        loser: v.optional(v.object({
+            userId: v.id("users"),
+            drivingSips: v.int64(),
+        })),
     }).index("by_pin", ["pin"]),
 });

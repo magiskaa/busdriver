@@ -108,25 +108,25 @@ export default function Home() {
 	return (
 		<main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-8 p-8">
 			<header className="space-y-2">
-				<h1 className="text-5xl font-bold text-center mt-1.5">Busdriver</h1>
-				<p className="max-w-1xl text-sm text-zinc-500 text-center">
+				<h1 className="text-5xl font-black text-center mt-1.5">Busdriver</h1>
+				<p className="text-sm text-zinc-500 text-center">
 					Jägershot is 12
 				</p>
 			</header>
 
-			<div className="absolute w-[50px] h-[50px] bg-gray-300 right-8 top-9 rounded-full flex">
-				<IoPerson color="gray" size={40} className="m-auto" onClick={() => router.push("/profile")} />
+			<div className="absolute right-8 top-9 w-[50px] h-[50px] bg-zinc-600 rounded-full flex items-center justify-center">
+				<IoPerson size={35} className="text-zinc-300" onClick={() => router.push("/profile")} />
 			</div>
 
-			<div className="rounded-xl bg-white p-8 mt-2 text-black">
-				<h2 className="text-3xl font-bold">Join Game</h2>
-				<p className="pt-2 mt-2 border-t border-zinc-300">
+			<div className="bg-zinc-900 border border-zinc-800 rounded-xl w-full p-6 shadow-lg shadow-zinc-800/90">
+				<h2 className="text-3xl font-black">Join Game</h2>
+				<p className="text-zinc-300 pt-3 mt-3 border-t border-zinc-700">
 					Join a game that your friend created by entering it&apos;s PIN code, or create a new game below.
 				</p>
 
 				<form className="mt-4 flex flex-col gap-4" onSubmit={handleJoining}>
 					<input
-						className="bg-zinc-100 text-black px-4 py-3 rounded-xl border border-zinc-200 outline-none focus:ring-2 focus:ring-green-500 transition-all"
+						className="bg-zinc-100 text-black px-4 py-3 rounded-xl border border-zinc-200 outline-none focus:ring-2 focus:ring-green-600 transition-all"
 						name="text"
 						placeholder="PIN code"
 						value={pin}
@@ -134,7 +134,7 @@ export default function Home() {
 						disabled={isJoining}
 					/>
 					<button
-						className="bg-green-600 text-white px-4 py-2 mt-2 rounded-xl font-bold text-2xl shadow-lg shadow-green-900/30 transition-all hover:bg-green-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-zinc-400"
+						className="mt-2 w-full bg-green-600 hover:bg-green-500 disabled:bg-zinc-700 disabled:text-zinc-500 text-white font-black py-4 rounded-xl text-xl transition-all shadow-lg shadow-green-600/20 disabled:shadow-zinc-500/20 active:scale-[0.98] disabled:cursor-not-allowed"
 						type="submit"
 						disabled={isJoining || ongoingGame ? true : false}
 					>
@@ -145,13 +145,13 @@ export default function Home() {
 				{errorMessage && <p className="mt-3 text-sm text-red-600">{errorMessage}</p>}
 			</div>
 
-			<div className="rounded-xl bg-white p-8 text-black">
-				<h2 className="text-3xl font-bold">Create Game</h2>
-				<p className="pt-2 mt-2 border-t border-zinc-300">
+			<div className="bg-zinc-900 border border-zinc-800 rounded-xl w-full p-6 shadow-lg shadow-zinc-800/90">
+				<h2 className="text-3xl font-black">Create Game</h2>
+				<p className="text-zinc-300 pt-3 mt-3 border-t border-zinc-700">
 					Create a new game and share the generated PIN code to your friends.
 				</p>
 				<button
-					className="bg-green-600 w-full text-white px-4 py-2 mt-6 rounded-xl font-bold text-2xl shadow-lg shadow-green-900/60 transition-all hover:bg-green-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-zinc-400"
+					className="mt-4 w-full bg-green-600 hover:bg-green-500 disabled:bg-zinc-700 disabled:text-zinc-500 text-white font-black py-4 rounded-xl text-xl transition-all shadow-lg shadow-green-600/20 disabled:shadow-zinc-500/20 active:scale-[0.98] disabled:cursor-not-allowed"
 					disabled={ongoingGame ? true : false}
 					onClick={handleCreating}
 				>
@@ -159,13 +159,13 @@ export default function Home() {
 				</button>
 			</div>
 
-			<div className="rounded-xl bg-white p-8 text-black">
-				<h2 className="text-3xl font-bold">Ongoing Game</h2>
-				<p className="pt-2 mt-2 border-t border-zinc-300">
+			<div className="bg-zinc-900 border border-zinc-800 rounded-xl w-full p-6 shadow-lg shadow-zinc-800/90">
+				<h2 className="text-3xl font-black">Ongoing Game</h2>
+				<p className="text-zinc-300 pt-3 mt-3 border-t border-zinc-700">
 					Join back to a game that is not yet finished.
 				</p>
 				<button
-					className="bg-green-600 w-full text-white px-4 py-2 mt-6 rounded-xl font-bold text-2xl shadow-lg shadow-green-900/30 transition-all hover:bg-green-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-zinc-400"
+					className="mt-4 w-full bg-green-600 hover:bg-green-500 disabled:bg-zinc-700 disabled:text-zinc-500 text-white font-black py-4 rounded-xl text-xl transition-all shadow-lg shadow-green-600/20 disabled:shadow-zinc-500/20 active:scale-[0.98] disabled:cursor-not-allowed"
 					disabled={!ongoingGame}
 					onClick={handleOngoing}
 				>
