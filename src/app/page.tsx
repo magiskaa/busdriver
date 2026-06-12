@@ -16,9 +16,10 @@ export default function Home() {
 	}, [isAuthenticated, isLoading, router]);
 
 	const getUserId = useQuery(api.users.userId);
+	const ongoingGame = useQuery(api.games.getOngoing, getUserId ? { userId: getUserId } : "skip");
+	
 	const createGame = useMutation(api.games.create);
 	const joinGame = useMutation(api.games.join);
-	const ongoingGame = useQuery(api.games.ongoing, getUserId ? { userId: getUserId } : "skip");
 
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 	

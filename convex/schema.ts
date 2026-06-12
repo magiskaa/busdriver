@@ -19,10 +19,10 @@ export default defineSchema({
     }).index("by_userId", ["userId"]),
     games: defineTable({
         pin: v.string(),
-        status: v.union(v.literal("waiting"), v.literal("active"), v.literal("finished")),
+        status: v.union(v.literal("waiting"), v.literal("active"), v.literal("tied"), v.literal("driving"), v.literal("finished")),
         host: v.id("users"),
         players: v.array(v.id("users")),
-        ready: v.array(v.id("users")),
+        startReady: v.array(v.id("users")),
         deck: v.optional(v.array(v.string())),
         board: v.optional(v.array(v.string())),
         revealed: v.optional(v.array(v.number())),
@@ -35,9 +35,23 @@ export default defineSchema({
             sipsReceived: v.int64(),
             sipsGiven: v.int64(),
         }))),
-        loser: v.optional(v.object({
-            userId: v.id("users"),
-            drivingSips: v.int64(),
+        tie: v.optional(v.object({
+            isTied: v.boolean(),
+            cards: v.array(v.string()),
+            picked: v.array(v.number()),
+            tiedPlayers: v.array(v.object({
+                userId: v.id("users"),
+                cardPicked: v.optional(v.number()),
+                revealed: v.optional(v.boolean()),
+            })),
         })),
+        drive: v.object({
+            ready: v.array(v.id("users")),
+            loser: v.optional(v.id("users")),
+            sips: v.optional(v.int64()),
+            deck: v.optional(v.array(v.string())),
+            board: v.optional(v.array(v.string())),
+            revealed: v.optional(v.array(v.number())),
+        }),
     }).index("by_pin", ["pin"]),
 });
