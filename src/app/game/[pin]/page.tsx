@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
@@ -10,6 +10,8 @@ import { useRouter } from "next/navigation";
 export default function GamePage({ params }: { params: Promise<{ pin: string }>; }) {
     const router = useRouter();
     const { pin: gamePin } = use(params);
+    const [nowTs, setNowTs] = useState(0);
+    const isResolvingDriveRef = useRef(false);
 
     const getUserId = useQuery(api.users.userId);
     const getGame = useQuery(api.games.getGame, gamePin ? { pin: gamePin } : "skip");
@@ -23,12 +25,17 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
     const tied = useMutation(api.games.tied);
     const pickCard = useMutation(api.games.pickCard);
     const revealTieBreaker = useMutation(api.games.revealTieBreaker);
+    const updateLoser = useMutation(api.games.updateLoser);
     const startDrive = useMutation(api.games.startDrive);
+    const revealDriveCard = useMutation(api.games.revealDriveCard);
+    const resolveDriveRound = useMutation(api.games.resolveDriveRound);
+    const finalizeDrive = useMutation(api.games.finalizeDrive);
 
     const [sipDistribution, setSipDistribution] = useState<{
         total: number;
         assignments: Record<string, number>;
     } | null>(null);
+    const isFinalizingDriveRef = useRef(false);
 
     const rowOfIndex = (idx: number) => {
         if (idx >= 10) return 5;
@@ -50,8 +57,14 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
     const tieBreakersRevealed = getGame && getGame.tie?.tiedPlayers.every(player => player.revealed === true);
 
     useEffect(() => {
+        const intervalId = setInterval(() => setNowTs(Date.now()), 500);
+        return () => clearInterval(intervalId);
+    }, []);
+    
+
+    useEffect(() => {
         if (playersReadyDrive && getGame?.status === "active") {
-            const hands = getGame.playerHands ? [...getGame.playerHands] : [];
+            const hands = getGame?.playerHands ? [...getGame.playerHands] : [];
             hands.sort((a, b) => b.cards.length - a.cards.length);
             const mostCards = hands[0].cards.length;
             const tiedPlayers = hands?.filter(hand => hand.cards.length === mostCards).map(hand => hand.userId);
@@ -62,12 +75,77 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
 
     useEffect(() => {
         if (tieBreakersRevealed && getGame?.status === "tied") {
+            const getCardRank = (rank: string) => {
+                switch (rank) {
+                    case "A":
+                        return 1;
+                    case "J":
+                        return 11;
+                    case "Q":
+                        return 12;
+                    case "K":
+                        return 13;
+                    default:
+                        return Number(rank);
+                }
+            }
+
+            const tiedPlayers = getGame.tie?.tiedPlayers ?? [];
+            const tieCards = getGame.tie?.cards ?? [];
+            const ranked = tiedPlayers.map((player) => {
+                const p = players?.find(p => p._id === player.userId);
+                const games = p?.games || 1;
+                const lostGames = p?.lostGames || 0;
+
+                return {
+                    userId: player.userId,
+                    rank: getCardRank(tieCards[player.cardPicked ?? 0].replace(/[♠♣♡♢]/g, "")),
+                    ratio: lostGames / games * 100,
+                }
+            });
+
+            ranked.sort((a, b) => a.rank - b.rank || a.ratio - b.ratio);
+            const loser = ranked[0].userId;
+            updateLoser({ pin: gamePin, loser });
+
             setTimeout(() => {
                 startDrive({ pin: gamePin });
             }, 5000);
         }
-    }, [getGame, tieBreakersRevealed, gamePin, startDrive]);
+    }, [getGame, tieBreakersRevealed, gamePin, players, startDrive, updateLoser]);
 
+    useEffect(() => {
+        if (
+            getGame?.status !== "driving" ||
+            !getUserId ||
+            getGame.drive.loser !== getUserId ||
+            !getGame.drive.dealNewRoundAt ||
+            isResolvingDriveRef.current
+        ) {
+            return;
+        }
+
+        isResolvingDriveRef.current = true;
+        resolveDriveRound({ pin: gamePin, userId: getUserId })
+            .finally(() => {
+                isResolvingDriveRef.current = false;
+            });
+    }, [getGame, getUserId, gamePin, nowTs, resolveDriveRound]);
+
+    useEffect(() => {
+        if (
+            getGame?.status !== "driving" ||
+            !getGame.drive.finishAt ||
+            isFinalizingDriveRef.current
+        ) {
+            return;
+        }
+
+        isFinalizingDriveRef.current = true;
+        finalizeDrive({ pin: gamePin }).finally(() => {
+            isFinalizingDriveRef.current = false;
+        });
+    }, [getGame, gamePin, nowTs, finalizeDrive]);
 
     if (getGame === null) {
         return (
@@ -83,22 +161,50 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
         );
     }
 
+    if (getGame?.status === "finished") {
+        return (
+            <main className="flex min-h-screen w-full flex-col items-center justify-center gap-6 p-8">
+                <h1 className="text-4xl font-black">Game Finished</h1>
+                <button
+                    className="rounded-xl bg-blue-700 px-6 py-3 text-xl font-black text-white hover:bg-blue-600"
+                    onClick={() => router.replace("/")}
+                >
+                    Return Home
+                </button>
+            </main>
+        );
+    }
+    
     if (getGame?.status === "driving") {
         const renderBoardCard = (index: number) => {
+            const board = getGame?.drive.board;
+            const revealedCards = getGame?.drive.revealed || [];
+            
+            const loser = getGame?.drive.loser;
+            const isLoser = getUserId && loser === getUserId;
+
+            const waitingForReplace = Boolean(getGame?.drive.dealNewRoundAt);
+            const waitingForFinish = Boolean(getGame?.drive.finishAt);
+            const cardsLocked = waitingForReplace || waitingForFinish;
+
             const card = board?.[index];
-            const isRevealed = revealedCards.includes(index);
             const cardRow = rowOfIndex(index);
-            const isActiveRow = activeRow === cardRow;
+            const isRevealed = revealedCards.includes(index);
+            const rowAlreadyRevealed = revealedCards.some(idx => rowOfIndex(idx) === cardRow);
+            const expectedRow = Math.max(1, 5 - revealedCards.length);
+            const isExpectedRow = cardRow === expectedRow;
+            const canReveal = isLoser && !waitingForReplace && !waitingForFinish && !isRevealed && !rowAlreadyRevealed && isExpectedRow;
+            
+            const rank = card?.replace(/[♠♣♡♢]/g, "");
+            const isPenaltyRank = rank === "J" || rank === "Q" || rank === "K" || rank === "A";
             const isRed = card?.includes("♡") || card?.includes("♢");
-
-            // TODO: Muokata tämä ajamiseen toimivaks
-
+            
             if (!isRevealed) {
                 return (
                     <div 
                         key={index} 
-                        onClick={() => revealCard({ pin: gamePin, index })}
-                        className={`bg-blue-800 rounded-lg w-[80px] h-[110px] flex items-center justify-center shadow-md shrink-0 border-2 transition-all ${isActiveRow ? "border-white cursor-pointer hover:bg-blue-700 shadow-white/20 opacity-100" : "opacity-80"}`}
+                        onClick={() => canReveal && getUserId && revealDriveCard({ pin: gamePin, userId: getUserId, index })}
+                        className={`bg-blue-800 rounded-lg w-[80px] h-[110px] flex items-center justify-center shadow-md shrink-0 border-2 transition-all ${canReveal ? "border-white cursor-pointer hover:bg-blue-700 shadow-white/20 opacity-100" : cardsLocked ? "opacity-50 border-zinc-600 cursor-not-allowed" : "opacity-80 border-zinc-500"}`}
                     >
                         <div className="w-12 h-16 border border-white/20 rounded-sm flex items-center justify-center">
                             <span className="text-white/20 font-black text-xl">?</span>
@@ -110,7 +216,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
             return (
                 <div 
                     key={index} 
-                    className={`bg-white text-black rounded-lg w-[80px] h-[110px] flex items-center justify-center shadow-md shrink-0 border-2 select-none transition-all ${isActiveRow ? "border-yellow-200 ring-1 ring-yellow-400/80" : "opacity-80 border-zinc-300"}`}
+                    className={`bg-white text-black rounded-lg w-[80px] h-[110px] flex items-center justify-center shadow-md shrink-0 border-2 select-none transition-all ${isPenaltyRank ? "border-red-500 ring-3 ring-red-500 shadow-red-500/50" : cardsLocked ? "border-zinc-400 opacity-55" : "border-yellow-200"}`}
                 >
                     <p className={`text-4xl font-bold ${isRed ? "text-red-600" : "text-black"}`}>
                         {card}
@@ -119,20 +225,22 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
             );
         };
 
+        const loser = getGame.drive.loser;
+
         return (
             <main className="mx-auto min-h-screen w-full max-w-3xl flex flex-col px-8 gap-4">
-                <div className="flex flex-row gap-4 overflow-x-auto w-full justify-center pt-8 pb-4">
+                <div className="flex flex-row wrap gap-4 overflow-x-auto w-full justify-center pt-8 pb-4">
                     {players?.map((player, idx) => {
-                        if (player._id === getUserId) return null;
+                        if (player._id === loser) return null;
                         const playerSips = getGame.sips?.find(user => user.userId === player._id);
                         return (
-                            <div key={idx} className="relative flex flex-col items-center justify-center gap-3 p-2 bg-zinc-800 rounded-lg border border-zinc-700 w-[105px]">
+                            <div key={idx} className="relative flex flex-col items-center justify-center gap-3 p-2 bg-zinc-800 rounded-lg border border-zinc-700 w-[150px]">
                                 {playerSips && playerSips.sipsReceived > 0n && (
                                     <div className="absolute -top-4 -right-3 bg-red-600 text-white font-black px-2 py-0.5 rounded-full shadow-xl">
                                         +{playerSips.sipsReceived.toString()}
                                     </div>
                                 )}
-                                <p className="text-lg font-semibold truncate max-w-[90px]">{player.username}</p>
+                                <p className="text-lg font-semibold truncate max-w-[135px]">{player.username}</p>
                             </div>
                         );
                     })}
@@ -154,10 +262,24 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                     <div className="flex flex-row gap-3 justify-center">
                         {[10, 11, 12, 13, 14].map(renderBoardCard)}
                     </div>
+                    {getGame.drive.finishAt && (
+                        <p className="text-center text-2xl font-black text-blue-400 mt-4">Game Finished!</p>
+                    )}
+                </div>
+
+                <div className="flex flex-col items-center justify-center gap-2 pt-4 pb-10 border-t border-zinc-700 mt-auto">
+                    <p className="flex-1 text-zinc-400">LOSER</p>
+                    <p className="text-3xl font-semibold mb-4">{players?.find(player => player._id === loser)?.username ?? "Username"}</p>
+                    <strong className="relative text-5xl text-white">{getGame.drive.sips}
+                        <span className="absolute -right-7 text-zinc-400 text-base">
+                            ({getGame?.sips?.find(user => user.userId === getGame.drive.loser)?.sipsReceived ?? 0})
+                        </span>
+                    </strong>
                 </div>
             </main>
         );
     }
+
 
     if (getGame?.status === "tied") {
         const renderBoardCard = (index: number) => {
@@ -211,7 +333,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                     {players?.map((player, idx) => {
                         if (!getGame.tie?.tiedPlayers.map(p => p.userId).includes(player._id)) { return null; }
                         const tiedPlayer = getGame.tie?.tiedPlayers.find(p => p.userId === player._id);
-                        const card = tiedPlayer?.cardPicked && getGame.tie.cards[tiedPlayer.cardPicked];
+                        const card = tiedPlayer?.cardPicked !== undefined ? getGame.tie.cards[tiedPlayer.cardPicked] : undefined;
                         const isRed = card?.toString().includes("♡") || card?.toString().includes("♢");
                         const revealed = tiedPlayer?.revealed;
 
@@ -227,7 +349,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                                 ) : card ? (
                                     <div 
                                         className={"bg-blue-800 rounded-lg w-[64px] h-[88px] flex items-center justify-center shadow-md shrink-0 border-2 transition-all border-white cursor-pointer hover:bg-blue-700 shadow-white/20"}
-                                        onClick={() => getUserId && tiedPlayer.cardPicked && revealTieBreaker({ pin: gamePin, userId: getUserId })}
+                                        onClick={() => getUserId && tiedPlayer?.cardPicked !== undefined && revealTieBreaker({ pin: gamePin, userId: getUserId })}
                                     >
                                         <div className="w-9 h-12 border border-white/20 rounded-sm flex items-center justify-center">
                                             <span className="text-white/20 font-black text-xl">?</span>
@@ -242,7 +364,9 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                 </div>
 
                 {tieBreakersRevealed && (
-                    <div className="flex flex-col items-center justify-center mt-4">
+                    <div className="flex flex-col items-center justify-center mt-2">
+                        <p className="flex-1 text-zinc-400">LOSER</p>
+                        <p className="text-3xl font-semibold mb-10">{players?.find(p => p._id === getGame.drive.loser)?.username || ""}</p>
                         <p className="text-2xl font-bold text-blue-500">The driving will begin in 5 seconds...</p>
                     </div>
                 )}
@@ -375,7 +499,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                                             });
                                         }
                                     }}
-                                    className={`bg-white text-black rounded-lg w-[75px] h-[105px] flex items-center justify-center shadow-lg shrink-0 border-2 select-none transition-all ${canPlay ? "cursor-pointer border-yellow-400 ring-2 ring-yellow-400/100 hover:-translate-y-2 hover:shadow-yellow-500/50" : "opacity-90 border-zinc-300"}`}
+                                    className={`bg-white text-black rounded-lg w-[75px] h-[105px] flex items-center justify-center shadow-lg shrink-0 border-2 select-none transition-all ${canPlay ? "cursor-pointer border-yellow-400 ring-2 ring-yellow-400 hover:-translate-y-2 hover:shadow-yellow-500/50" : "opacity-90 border-zinc-300"}`}
                                 >
                                     <p className={`text-4xl font-bold ${isRed ? "text-red-600" : "text-black"}`}>
                                         {card}
@@ -456,7 +580,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                                         await distributeSips({
                                             pin: gamePin,
                                             giverId: getUserId,
-                                            total: BigInt(sipDistribution.total),
+                                            total: sipDistribution.total,
                                             assignments: Object.entries(sipDistribution.assignments).map(([userId, sips]) => ({
                                                 userId: userId as Id<"users">,
                                                 sips
@@ -513,7 +637,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                                         <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Games</span>
                                     </div>
                                     <div className="flex items-baseline justify-between">
-                                        <span>{Number((player.lostGames * 100n) / (player.games || 1n))}%</span>
+                                        <span>{player.lostGames * 100 / player.games || 1}%</span>
                                         <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider">L%</span>
                                     </div>
                                 </div>

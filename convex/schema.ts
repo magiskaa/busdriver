@@ -11,11 +11,11 @@ export default defineSchema({
     }).index("by_username", ["username"]),
     stats: defineTable({
         userId: v.id("users"),
-        games: v.int64(),
-        lostGames: v.int64(),
-        sipsReceived: v.int64(),
-        sipsGiven: v.int64(),
-        drivingSips: v.int64(),
+        games: v.number(),
+        lostGames: v.number(),
+        sipsReceived: v.number(),
+        sipsGiven: v.number(),
+        drivingSips: v.number(),
     }).index("by_userId", ["userId"]),
     games: defineTable({
         pin: v.string(),
@@ -32,8 +32,8 @@ export default defineSchema({
         }))),
         sips: v.optional(v.array(v.object({
             userId: v.id("users"),
-            sipsReceived: v.int64(),
-            sipsGiven: v.int64(),
+            sipsReceived: v.number(),
+            sipsGiven: v.number(),
         }))),
         tie: v.optional(v.object({
             isTied: v.boolean(),
@@ -48,10 +48,13 @@ export default defineSchema({
         drive: v.object({
             ready: v.array(v.id("users")),
             loser: v.optional(v.id("users")),
-            sips: v.optional(v.int64()),
+            sips: v.optional(v.number()),
             deck: v.optional(v.array(v.string())),
             board: v.optional(v.array(v.string())),
             revealed: v.optional(v.array(v.number())),
+            dealNewRoundAt: v.optional(v.number()),
+            lastRevealedIndex: v.optional(v.number()),
+            finishAt: v.optional(v.number()),
         }),
     }).index("by_pin", ["pin"]),
 });
