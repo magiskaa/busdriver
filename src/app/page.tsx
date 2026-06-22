@@ -15,8 +15,8 @@ export default function Home() {
 		if (!isLoading && !isAuthenticated) { router.replace("/auth"); }
 	}, [isAuthenticated, isLoading, router]);
 
-	const getUserId = useQuery(api.users.userId);
-	const ongoingGame = useQuery(api.games.getOngoing, getUserId ? { userId: getUserId } : "skip");
+	const userId = useQuery(api.users.getUserId);
+	const ongoingGame = useQuery(api.games.getOngoing, userId ? { userId: userId } : "skip");
 	
 	const createGame = useMutation(api.games.create);
 	const joinGame = useMutation(api.games.join);
@@ -28,8 +28,8 @@ export default function Home() {
 
 	if (isLoading) {
 		return (
-			<main className="flex min-h-screen w-full flex-col p-8">
-				<h1 className="my-auto text-center text-2xl font-bold">Checking session...</h1>
+			<main className="loading-main">
+				<h1 className="loading-h1">Loading...</h1>
 			</main>
 		);
 	}
@@ -37,12 +37,11 @@ export default function Home() {
 	if (!isAuthenticated) {
 		return null;
 	}
-
 	
 	const handleJoining = async (event: SubmitEvent<HTMLFormElement>) => {
 		event.preventDefault();
 		
-		if (!getUserId) {
+		if (!userId) {
 			setErrorMessage("Joining the game failed. Sign out and log in again.");
 			return;
 		}
@@ -65,7 +64,7 @@ export default function Home() {
 		setErrorMessage(null);
 		
 		try {
-			await joinGame({ pin: trimmedPin, player: getUserId });
+			await joinGame({ pin: trimmedPin, player: userId });
 			router.push(`/game/${trimmedPin}`);
 		} catch {
 			setErrorMessage("Joining the game failed. Try again.");
@@ -76,14 +75,14 @@ export default function Home() {
 	
 	if (isJoining) {
 		return (
-			<main className="flex min-h-screen w-full flex-col p-8">
-				<h1 className="my-auto text-center text-2xl font-bold">Joining game...</h1>
+			<main className="loading-main">
+				<h1 className="loading-h1">Joining Game...</h1>
 			</main>
 		)
 	}
 	
 	const handleCreating = async () => {
-		if (!getUserId) {
+		if (!userId) {
 			setErrorMessage("Creating the game failed. Sign out and log in again.");
 			return;
 		}
@@ -93,7 +92,7 @@ export default function Home() {
 		}
 
 		try {
-			const res = await createGame({ userId: getUserId });
+			const res = await createGame({ userId: userId });
 			router.push(`/game/${res.pin}`);
 		} catch {
 			setErrorMessage("Creating the game failed. Try again.");
@@ -107,27 +106,28 @@ export default function Home() {
 	};
 
 	return (
-		<main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-8 p-8">
-			<header className="space-y-2">
-				<h1 className="text-5xl font-black text-center mt-1.5">Busdriver</h1>
-				<p className="text-sm text-zinc-500 text-center">
+		<main>
+			<header>
+				<h1>Busdriver</h1>
+				<p className="header-p">
 					Jägershot is 12
 				</p>
 			</header>
 
-			<div className="absolute right-8 top-9 w-[50px] h-[50px] bg-zinc-600 rounded-full flex items-center justify-center">
-				<IoPerson size={35} className="text-zinc-300" onClick={() => router.push("/profile")} />
+			<div className="profile-pic-div">
+				<IoPerson className="profile-pic-icon" onClick={() => router.push("/profile")} />
 			</div>
+				
+			{errorMessage && <p className="error-p">{errorMessage ?? "Error occurred. Please try again."}</p>}
 
-			<div className="bg-zinc-900 border border-zinc-800 rounded-xl w-full p-6 shadow-lg shadow-zinc-800/90">
-				<h2 className="text-3xl font-black">Join Game</h2>
-				<p className="text-zinc-300 pt-3 mt-3 border-t border-zinc-700">
+			<div className="main-div">
+				<h2>Join Game</h2>
+				<p className="main-p">
 					Join a game that your friend created by entering it&apos;s PIN code, or create a new game below.
 				</p>
 
-				<form className="mt-4 flex flex-col gap-4" onSubmit={handleJoining}>
+				<form className="mt-2 flex flex-col gap-3 sm:mt-4 sm:gap-4" onSubmit={handleJoining}>
 					<input
-						className="bg-zinc-100 text-black px-4 py-3 rounded-xl border border-zinc-200 outline-none focus:ring-2 focus:ring-green-600 transition-all"
 						name="text"
 						placeholder="PIN code"
 						value={pin}
@@ -135,24 +135,21 @@ export default function Home() {
 						disabled={isJoining}
 					/>
 					<button
-						className="mt-2 w-full bg-green-600 hover:bg-green-500 disabled:bg-zinc-700 disabled:text-zinc-500 text-white font-black py-4 rounded-xl text-xl transition-all shadow-lg shadow-green-600/20 disabled:shadow-zinc-500/20 active:scale-[0.98] disabled:cursor-not-allowed"
 						type="submit"
 						disabled={isJoining || ongoingGame ? true : false}
 					>
 						{isJoining ? "Joining..." : "Join"}
 					</button>
 				</form>
-
-				{errorMessage && <p className="mt-3 text-sm text-red-600">{errorMessage}</p>}
 			</div>
 
-			<div className="bg-zinc-900 border border-zinc-800 rounded-xl w-full p-6 shadow-lg shadow-zinc-800/90">
-				<h2 className="text-3xl font-black">Create Game</h2>
-				<p className="text-zinc-300 pt-3 mt-3 border-t border-zinc-700">
+			<div className="main-div">
+				<h2>Create Game</h2>
+				<p className="main-p">
 					Create a new game and share the generated PIN code to your friends.
 				</p>
 				<button
-					className="mt-4 w-full bg-green-600 hover:bg-green-500 disabled:bg-zinc-700 disabled:text-zinc-500 text-white font-black py-4 rounded-xl text-xl transition-all shadow-lg shadow-green-600/20 disabled:shadow-zinc-500/20 active:scale-[0.98] disabled:cursor-not-allowed"
+					className="mt-2 sm:mt-4 sm:py-4"
 					disabled={ongoingGame ? true : false}
 					onClick={handleCreating}
 				>
@@ -160,13 +157,13 @@ export default function Home() {
 				</button>
 			</div>
 
-			<div className="bg-zinc-900 border border-zinc-800 rounded-xl w-full p-6 shadow-lg shadow-zinc-800/90">
-				<h2 className="text-3xl font-black">Ongoing Game</h2>
-				<p className="text-zinc-300 pt-3 mt-3 border-t border-zinc-700">
+			<div className="main-div">
+				<h2>Ongoing Game</h2>
+				<p className="main-p">
 					Join back to a game that is not yet finished.
 				</p>
 				<button
-					className="mt-4 w-full bg-green-600 hover:bg-green-500 disabled:bg-zinc-700 disabled:text-zinc-500 text-white font-black py-4 rounded-xl text-xl transition-all shadow-lg shadow-green-600/20 disabled:shadow-zinc-500/20 active:scale-[0.98] disabled:cursor-not-allowed"
+					className="mt-2 sm:mt-4 sm:py-4"
 					disabled={!ongoingGame}
 					onClick={handleOngoing}
 				>

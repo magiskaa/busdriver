@@ -22,19 +22,21 @@ export default defineSchema({
         status: v.union(v.literal("waiting"), v.literal("active"), v.literal("tied"), v.literal("driving"), v.literal("finished")),
         host: v.id("users"),
         players: v.array(v.id("users")),
-        startReady: v.array(v.id("users")),
-        deck: v.optional(v.array(v.string())),
-        board: v.optional(v.array(v.string())),
-        revealed: v.optional(v.array(v.number())),
-        playerHands: v.optional(v.array(v.object({
-            userId: v.id("users"),
-            cards: v.array(v.string()),
-        }))),
-        sips: v.optional(v.array(v.object({
-            userId: v.id("users"),
-            sipsReceived: v.number(),
-            sipsGiven: v.number(),
-        }))),
+        base: v.object({
+            ready: v.array(v.id("users")),
+            deck: v.optional(v.array(v.string())),
+            board: v.optional(v.array(v.string())),
+            revealed: v.optional(v.array(v.number())),
+            playerHands: v.optional(v.array(v.object({
+                userId: v.id("users"),
+                cards: v.array(v.string()),
+            }))),
+            sips: v.optional(v.array(v.object({
+                userId: v.id("users"),
+                sipsReceived: v.number(),
+                sipsGiven: v.number(),
+            }))),
+        }),
         tie: v.optional(v.object({
             isTied: v.boolean(),
             cards: v.array(v.string()),

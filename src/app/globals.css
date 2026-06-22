@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-	--background: #ffffff;
-	--foreground: #171717;
+	--background: #0a0a0a;
+	--foreground: #ededed;
 }
 
 @theme inline {
@@ -12,15 +12,144 @@
 	--font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-	:root {
-		--background: #0a0a0a;
-		--foreground: #ededed;
-	}
-}
-
 body {
 	background: var(--background);
 	color: var(--foreground);
 	font-family: Arial, Helvetica, sans-serif;
+}
+
+
+/* LOADING */
+.loading-main {
+	@apply 
+	mx-auto min-h-screen w-full max-w-3xl flex flex-col items-center justify-center
+}
+
+.loading-h1 {
+	@apply 
+	text-2xl font-black
+}
+
+
+/* HEADER */
+header {
+	@apply space-y-2
+}
+
+h1 {
+	@apply 
+	text-4xl font-black text-center 
+	sm:text-5xl
+}
+
+.header-p {
+	@apply text-xs text-zinc-500 text-center 
+	sm:text-sm
+}
+
+.error-p {
+	@apply 
+	text-sm text-red-600 mx-auto -my-2
+	sm:text-base
+}
+
+
+/* PROFILE */
+.profile-pic-div {
+	@apply 
+	absolute right-3 top-3 w-[40px] h-[40px] bg-zinc-600 rounded-full flex items-center justify-center flex-shrink-0
+	sm:right-8 sm:top-8 sm:w-[50px] sm:h-[50px]
+}
+
+.profile-pic-icon {
+	@apply 
+	text-zinc-300 w-[28px] h-[28px] 
+	sm:w-[35px] sm:h-[35px]
+}
+
+.profile-stats-p {
+	@apply 
+	text-lg text-zinc-400
+	sm:text-xl
+}
+
+.profile-stats-strong {
+	@apply
+	text-white
+}
+
+
+/* BACK ARROW */
+.back-arrow-div {
+	@apply 
+	absolute left-3 top-3 w-[40px] h-[40px] flex items-center justify-center
+	sm:right-8 sm:top-8 sm:w-[50px] sm:h-[50px]
+}
+
+.back-arrow-icon {
+	@apply 
+	text-zinc-100 w-[40px] h-[40px]
+	hover:text-zinc-400  
+	active:scale-[0.9]
+	sm:w-[50px] sm:h-[50px]
+}
+
+
+/* MAIN */
+main {
+	@apply 
+	mx-auto h-dvh max-h-dvh w-full max-w-3xl overflow-hidden flex flex-col gap-5 p-3 
+	sm:min-h-screen sm:h-auto sm:max-h-none sm:gap-8 sm:p-8
+}
+
+h2 {
+	@apply 
+	text-2xl font-black 
+	sm:text-3xl
+}
+
+.main-div {
+	@apply 
+	bg-zinc-900 border border-zinc-800 rounded-xl w-full px-4 py-3 pt-2 shadow-lg shadow-zinc-800/40 
+	sm:p-6
+}
+
+.main-p {
+	@apply 
+	text-zinc-300 text-sm pt-1 mt-1 border-t border-zinc-700 leading-snug 
+	sm:text-base sm:pt-3 sm:mt-3
+}
+
+button {
+	@apply 
+	w-full bg-green-600 text-white font-black py-2 rounded-xl text-xl transition-all shadow-lg shadow-green-600/20 
+	hover:bg-green-500
+	disabled:bg-zinc-700 disabled:text-zinc-500 disabled:shadow-zinc-500/10 disabled:cursor-not-allowed
+	active:scale-[0.95]  
+	sm:mt-2 sm:py-4
+}
+
+input {
+	@apply 
+	bg-zinc-100 text-black px-2.5 py-1.5 rounded-xl border border-zinc-200 outline-none transition-all
+	focus:ring-2 focus:ring-green-600  
+	sm:px-4 sm:py-3
+}
+
+.player-div {
+	@apply
+	flex items-center justify-between bg-zinc-800/50 px-1.5 py-1 rounded-lg border border-zinc-700/50
+	sm:px-3 sm:py-1.5
+}
+
+.player-p {
+	@apply
+	flex-1 font-bold text-base truncate max-w-[100px]
+	sm:text-xl sm:max-w-[250px]
+}
+
+.player-gamestats-div {
+	@apply
+	flex flex-col text-base font-bold bg-zinc-700/50 px-1.5 py-0.5 rounded-lg border border-zinc-700 min-w-[83px] justify-between 
+	sm:text-xl sm:px-3 sm:py-1 sm:min-w-[110px]
 }

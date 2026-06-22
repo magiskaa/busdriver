@@ -80,7 +80,7 @@ export const getPlayers = query({
 					...user,
 					games: stats?.games ?? 0,
 					lostGames: stats?.lostGames ?? 0,
-					ready: game?.startReady.includes(id),
+					ready: game?.base.ready.includes(id),
 				};
 			})
 		);
@@ -133,7 +133,9 @@ export const create = mutation({
 			status: "waiting",
 			host: args.userId,
 			players: [args.userId],
-			startReady: [],
+			base: {
+				ready: [],
+			},
 			drive: {
 				ready: [],
 			},
@@ -155,7 +157,7 @@ export const join = mutation({
 			.unique();
 
 		if (!game) { throw new Error("Game not found."); }
-		if (game.status === "finished" || game.status === "active") { throw new Error("Game is either in progress or finished.") }
+		if (game.status === "finished" || game.status === "active" || game.status === "tied" || game.status === "driving") { throw new Error("Game is either in progress or finished.") }
 		if (game.players.length > 6) { throw new Error("Game is full."); }
 
 		ctx.db.patch(game._id, {
@@ -187,10 +189,12 @@ export const ready = mutation({
 				},
 			});
 		} else {
-			const list = game.startReady;
+			const list = game.base.ready;
 			const includes = list.includes(args.id);
 			await ctx.db.patch(game._id, {
-				startReady: includes ? list.filter((id) => id !== args.id) : [...list, args.id],
+				base: {
+					ready: includes ? list.filter((id) => id !== args.id) : [...list, args.id],
+				},
 			});
 		}
 	},
@@ -226,11 +230,14 @@ export const start = mutation({
 
 		await ctx.db.patch(game._id, {
 			status: "active",
-			deck: remainingDeck,
-			board,
-			revealed: [],
-			playerHands,
-			sips: [],
+			base: {
+				...game.base,
+				deck: remainingDeck,
+				board,
+				revealed: [],
+				playerHands,
+				sips: [],
+			},
 		});
 	},
 });
@@ -246,9 +253,11 @@ export const revealCard = mutation({
 			.withIndex("by_pin", (query) => query.eq("pin", args.pin))
 			.unique();
 
-		if (!game || !game.board || !game.revealed) return;
+		const revealed = game?.base.revealed;
 
-		if (game.revealed.includes(args.index)) return;
+		if (!game || !game.base.board || !revealed) return;
+
+		if (revealed.includes(args.index)) return;
 
 		const indexesOfRow = (row: number) => {
 			if (row === 5) { return [10, 11, 12, 13, 14]; }
@@ -262,14 +271,17 @@ export const revealCard = mutation({
 		if (targetRow < 5) {
 			const rowBelow = targetRow + 1;
 			const cardsBelow = indexesOfRow(rowBelow);
-			const allRevealedBelow = cardsBelow.every((idx) => game.revealed?.includes(idx));
+			const allRevealedBelow = cardsBelow.every((idx) => revealed.includes(idx));
 			if (!allRevealedBelow) {
 				throw new Error(`Must reveal a card from row ${rowBelow} first.`);
 			}
 		}
 
 		await ctx.db.patch(game._id, {
-			revealed: [...game.revealed, args.index],
+			base: {
+				...game.base,
+				revealed: [...revealed, args.index],
+			},
 		});
 	},
 });
@@ -286,24 +298,28 @@ export const playCard = mutation({
 			.withIndex("by_pin", (query) => query.eq("pin", args.pin))
 			.unique();
 
-		if (!game || !game.board || !game.revealed || !game.playerHands) return;
+		const board = game?.base.board;
+		const revealed = game?.base.revealed;
+		const playerHands = game?.base.playerHands;
+
+		if (!game || !board || !revealed || !playerHands) return;
 
 		const playerCardRank = getCardRank(args.card);
 
-		const lastRevealedIdx = game.revealed[game.revealed.length - 1];
+		const lastRevealedIdx = revealed[revealed.length - 1];
 		if (lastRevealedIdx === undefined) { throw new Error("No cards revealed on board yet."); }
 
 		const activeRow = rowOfIndex(lastRevealedIdx);
 
 		const isRankOnActiveRow = (rank: string) => {
-			return game.revealed?.some((idx) => {
-				return rowOfIndex(idx) === activeRow && getCardRank(game.board![idx]) === rank;
+			return revealed.some((idx) => {
+				return rowOfIndex(idx) === activeRow && getCardRank(board![idx]) === rank;
 			});
 		};
 
 		if (!isRankOnActiveRow(playerCardRank)) { throw new Error("Card rank does not match any revealed card on the current row."); }
 
-		const newHands = game.playerHands.map((hand) => {
+		const newHands = playerHands.map((hand) => {
 			if (hand.userId === args.userId) {
 				const cardIdx = hand.cards.indexOf(args.card);
 				if (cardIdx > -1) {
@@ -316,7 +332,12 @@ export const playCard = mutation({
 		});
 
 		await ctx.db.patch(game._id, {
-			playerHands: newHands,
+			base: {
+				...game.base,
+				board,
+				revealed,
+				playerHands: newHands,
+			}
 		});
 	},
 });
@@ -339,20 +360,22 @@ export const distributeSips = mutation({
 			.withIndex("by_pin", (query) => query.eq("pin", args.pin))
 			.unique();
 
-		if (!game || !game.sips) return;
+		const sips = game?.base.sips;
+		
+		if (!game || !sips) return;
 
-		const sips = [];
+		const newSips = [];
         for (const assignment of args.assignments) {
-			const userSips = game?.sips?.find(entry => entry.userId === assignment.userId);
+			const userSips = sips.find(entry => entry.userId === assignment.userId);
 
 			if (assignment.userId === args.giverId) {
-				sips.push({
+				newSips.push({
 					userId: assignment.userId,
 					sipsReceived: (userSips?.sipsReceived ?? 0) + assignment.sips,
 					sipsGiven: (userSips?.sipsGiven ?? 0) + args.total,
 				});
 			} else {
-				sips.push({
+				newSips.push({
 					userId: assignment.userId,
 					sipsReceived: (userSips?.sipsReceived ?? 0) + assignment.sips,
 					sipsGiven: userSips?.sipsGiven ?? 0,
@@ -361,7 +384,10 @@ export const distributeSips = mutation({
 		}
 
 		await ctx.db.patch(game._id, {
-			sips,
+			base: {
+				...game.base,
+				sips: newSips,
+			}
 		});
 	},
 });
@@ -377,10 +403,12 @@ export const tied = mutation({
 			.withIndex("by_pin", (query) => query.eq("pin", args.pin))
 			.unique();
 
-		if (!game || !game.deck) { throw new Error("Game not found."); }
+		const deck = game?.base.deck;
 
-		const cards = game.deck.slice(0, 6);
-		const remainingDeck = game.deck.slice(6);
+		if (!game || !deck) { throw new Error("Game not found."); }
+
+		const cards = deck.slice(0, 6);
+		const remainingDeck = deck.slice(6);
 
 		const tiedPlayers = args.tiedPlayers.map((id) => {
 			return {
@@ -390,7 +418,10 @@ export const tied = mutation({
 
 		await ctx.db.patch(game._id, {
 			status: "tied",
-			deck: remainingDeck,
+			base: {
+				...game.base,
+				deck: remainingDeck,
+			},
 			tie: {
 				isTied: true,
 				cards,
@@ -436,8 +467,7 @@ export const pickCard = mutation({
 
 		await ctx.db.patch(game._id, {
 			tie: {
-				isTied: game.tie.isTied,
-				cards: game.tie.cards,
+				...game.tie,
 				picked: [...game.tie.picked, args.index],
 				tiedPlayers,
 			},
@@ -477,9 +507,7 @@ export const revealTieBreaker = mutation({
 
 		await ctx.db.patch(game._id, {
 			tie: {
-				isTied: game.tie.isTied,
-				cards: game.tie.cards,
-				picked: game.tie.picked,
+				...game.tie,
 				tiedPlayers,
 			},
 		});
@@ -501,7 +529,7 @@ export const updateLoser = mutation({
 
 		await ctx.db.patch(game._id, {
 			drive: {
-				ready: game.drive.ready,
+				...game.drive,
 				loser: args.loser,
 			},
 		});
@@ -518,9 +546,9 @@ export const startDrive = mutation({
 			.withIndex("by_pin", (query) => query.eq("pin", args.pin))
 			.unique();
 
-		if (!game || !game.playerHands) { throw new Error("Game not found."); }
+		if (!game) { throw new Error("Game not found."); }
 
-		if (game.status !== "tied") return;
+		if (game.status !== "tied" && game.status !== "active") return;
 
 		const shuffled = getShuffledDeck();
 		const board = shuffled.slice(0, 15);
@@ -529,8 +557,7 @@ export const startDrive = mutation({
 		await ctx.db.patch(game._id, {
 			status: "driving",
 			drive: {
-				ready: game.drive.ready,
-				loser: game.drive.loser,
+				...game.drive,
 				sips: 0,
 				deck: remainingDeck,
 				board,
@@ -585,11 +612,8 @@ export const revealDriveCard = mutation({
 			const finishAt = now + 3000;
 			await ctx.db.patch(game._id, {
 				drive: {
-					ready: game.drive.ready,
-					loser: game.drive.loser,
+					...game.drive,
 					sips: newSips,
-					deck: game.drive.deck,
-					board: game.drive.board,
 					revealed: newRevealed,
 					dealNewRoundAt: undefined,
 					lastRevealedIndex: undefined,
@@ -599,15 +623,12 @@ export const revealDriveCard = mutation({
 			return;
 		}
 
-		if (!isPenalty && revealed.length >= 5) {
+		if (!isPenalty && newRevealed.length >= 5) {
 			const finishAt = now + 3000;
 			await ctx.db.patch(game._id, {
 				drive: {
-					ready: game.drive.ready,
-					loser: game.drive.loser,
+					...game.drive,
 					sips: newSips,
-					deck: game.drive.deck,
-					board: game.drive.board,
 					revealed: newRevealed,
 					dealNewRoundAt: undefined,
 					lastRevealedIndex: undefined,
@@ -620,11 +641,8 @@ export const revealDriveCard = mutation({
 		const dealNewRoundAt = isPenalty ? now + 3000 : undefined;
 		await ctx.db.patch(game._id, {
 			drive: {
-				ready: game.drive.ready,
-				loser: game.drive.loser,
+				...game.drive,
 				sips: newSips,
-				deck: game.drive.deck,
-				board: game.drive.board,
 				revealed: newRevealed,
 				dealNewRoundAt,
 				lastRevealedIndex: isPenalty ? args.index : undefined,
@@ -675,9 +693,7 @@ export const resolveDriveRound = mutation({
 
 		await ctx.db.patch(game._id, {
 			drive: {
-				ready: game.drive.ready,
-				loser: game.drive.loser,
-				sips: game.drive.sips,
+				...game.drive,
 				deck,
 				board,
 				revealed: [],
@@ -707,12 +723,7 @@ export const finalizeDrive = mutation({
 		await ctx.db.patch(game._id, {
 			status: "finished",
 			drive: {
-				ready: game.drive.ready,
-				loser: game.drive.loser,
-				sips: game.drive.sips,
-				deck: game.drive.deck,
-				board: game.drive.board,
-				revealed: game.drive.revealed,
+				...game.drive,
 				dealNewRoundAt: undefined,
 				lastRevealedIndex: undefined,
 				finishAt: undefined,

@@ -16,19 +16,19 @@ export const get = query({
 export const update = mutation({
     args: {
         userId: v.id("users"),
-        games: v.int64(),
-        lostGames: v.int64(),
-        sipsReceived: v.int64(),
-        sipsGiven: v.int64(),
-        drivingSips: v.int64(),
+        games: v.number(),
+        lostGames: v.number(),
+        sipsReceived: v.number(),
+        sipsGiven: v.number(),
+        drivingSips: v.number(),
     },
     handler: async (ctx, args) => {
-        const statsDoc = await ctx.db
+        const stats = await ctx.db
             .query("stats")
             .withIndex("by_userId", (query) => query.eq("userId", args.userId))
             .unique();
 
-        if (!statsDoc) {
+        if (!stats) {
             await ctx.db.insert("stats", {
                 userId: args.userId,
                 games: args.games,
@@ -40,12 +40,12 @@ export const update = mutation({
             return;
         }
 
-        await ctx.db.patch(statsDoc._id, {
-            games: statsDoc.games + args.games,
-            lostGames: statsDoc.lostGames + args.lostGames,
-            sipsReceived: statsDoc.sipsReceived + args.sipsReceived,
-            sipsGiven: statsDoc.sipsGiven + args.sipsGiven,
-            drivingSips: statsDoc.drivingSips + args.drivingSips,
+        await ctx.db.patch(stats._id, {
+            games: stats.games + args.games,
+            lostGames: stats.lostGames + args.lostGames,
+            sipsReceived: stats.sipsReceived + args.sipsReceived,
+            sipsGiven: stats.sipsGiven + args.sipsGiven,
+            drivingSips: stats.drivingSips + args.drivingSips,
         });
     },
 });

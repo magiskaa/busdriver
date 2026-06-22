@@ -16,10 +16,9 @@ export default function ProfilePage() {
         if (!isLoading && !isAuthenticated) { router.replace("/auth"); }
     }, [isAuthenticated, isLoading, router]);
     
-    const getUserId = useQuery(api.users.userId);
-    const getUser = useQuery(api.users.get);
-    const getStats = useQuery(api.stats.get, getUserId ? { userId: getUserId } : "skip");
-    const updateStats = useMutation(api.stats.update);
+    const userId = useQuery(api.users.getUserId);
+    const user = useQuery(api.users.getUser);
+    const getStats = useQuery(api.stats.get, userId ? { userId: userId } : "skip");
 
     if (isLoading) {
         return (
@@ -36,27 +35,27 @@ export default function ProfilePage() {
     const editProfile = async () => {};
     
     return (
-        <main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-8 p-8">
-            <header className="space-y-2">
-                <h1 className="text-5xl font-black text-center mt-1.5">Profile</h1>
-                <p className="text-sm text-zinc-500 text-center">
+        <main>
+            <header>
+                <h1>Profile</h1>
+                <p className="header-p">
                     Observe your stats or edit your profile
                 </p>
             </header>
 
-            <div className="absolute left-8 top-9 w-[50px] h-[50px] rounded-full flex items-center justify-center">
-                <IoArrowBack size={50} className="text-zinc-100 hover:text-zinc-400" onClick={() => router.push("/")} />
+            <div className="back-arrow-div">
+                <IoArrowBack className="back-arrow-icon" onClick={() => router.push("/")} />
             </div>
 
-            <div className="bg-zinc-900 border border-zinc-800 rounded-xl w-full p-6 shadow-lg shadow-zinc-800/90 flex flex-col gap-8">
+            <div className="main-div flex flex-col gap-4 sm:gap-8">
                 <div className="flex items-center justify-start gap-8">
-                    <div className="w-[120px] h-[120px] bg-zinc-600 rounded-full flex items-center justify-center">
-                        <IoPerson size={84} className="text-zinc-300" onClick={() => router.push("/profile")} />
+                    <div className="w-[100px] h-[100px] bg-zinc-600 rounded-full flex items-center justify-center flex-shrink-0 sm:w-[120px] sm:h-[120px]">
+                        <IoPerson className="text-zinc-300 w-[70px] h-[70px] sm:w-[84px] sm:h-[84px]" />
                     </div>
-                    <div>
-                        <h2 className="text-4xl font-bold">{getUser?.username || "Username"}</h2>
+                    <div className="overflow-hidden">
+                        <h2 className="truncate max-w-[200px]">{user?.username || "Username"}</h2>
                         <button
-                            className="border border-zinc-700 px-4 mt-6 mb-[-10px] mt-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-black py-1 rounded-xl transition-all shadow-lg shadow-zinc-800/20 active:scale-[0.98]"
+                            className="max-w-fit border border-zinc-700 px-2 mt-4 !bg-zinc-800 hover:!bg-zinc-700 !text-sm !text-zinc-300 !py-1 !shadow-zinc-800/20 sm:px-4 sm:!mt-6 sm:!text-xl"
                             onClick={editProfile}
                         >
                             Edit profile
@@ -64,30 +63,30 @@ export default function ProfilePage() {
                     </div>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-y-4 border-t border-zinc-700 pt-8">
-                    <p className="text-xl">
-                        Games: <strong>{getStats?.games?.toString() || 0}</strong>
+                <div className="grid grid-cols-2 gap-y-4 border-t border-zinc-700 pt-4 sm:pt-8">
+                    <p className="profile-stats-p">
+                        Games: <strong className="profile-stats-strong">{getStats?.games?.toString() || 0}</strong>
                     </p>
-                    <p className="text-xl">
-                        Sips given: <strong>{getStats?.sipsGiven?.toString() || 0}</strong>
+                    <p className="profile-stats-p">
+                        Sips given: <strong className="profile-stats-strong">{getStats?.sipsGiven?.toString() || 0}</strong>
                     </p>
-                    <p className="text-xl">
-                        Lost games: <strong>{getStats?.lostGames?.toString() || 0}</strong>
+                    <p className="profile-stats-p">
+                        Lost games: <strong className="profile-stats-strong">{getStats?.lostGames?.toString() || 0}</strong>
                     </p>
-                    <p className="text-xl">
-                        Sips received: <strong>{getStats?.sipsReceived?.toString() || 0}</strong>
+                    <p className="profile-stats-p">
+                        Sips received: <strong className="profile-stats-strong">{getStats?.sipsReceived?.toString() || 0}</strong>
                     </p>
-                    <p className="text-xl">
-                        L%: <strong>{getStats ? Number((getStats.lostGames * 100n) / (getStats.games || 1n)) : 0}%</strong>
+                    <p className="profile-stats-p">
+                        L%: <strong className="profile-stats-strong">{getStats ? (getStats.lostGames * 100) / (getStats.games || 1) : 0}%</strong>
                     </p>
-                    <p className="text-xl">
-                        Driving sips: <strong>{getStats?.drivingSips?.toString() || 0}</strong>
+                    <p className="profile-stats-p">
+                        Driving sips: <strong className="profile-stats-strong">{getStats?.drivingSips?.toString() || 0}</strong>
                     </p>
                 </div>
             </div>
 
             <button
-                className="w-full bg-red-700 hover:bg-red-600 text-white font-black py-4 rounded-xl text-xl transition-all shadow-lg shadow-red-700/20 active:scale-[0.98]"
+                className="!bg-red-700 hover:!bg-red-600 !shadow-red-700/20"
                 onClick={() => signOut()}
             >
                 Sign out
