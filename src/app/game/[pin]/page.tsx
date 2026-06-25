@@ -193,48 +193,48 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
 
     if (game?.status === "finished") {
         return (
-            <main className="mx-auto min-h-screen w-full max-w-3xl flex flex-col gap-8 p-8">
-                <header className="space-y-2 mx-auto">
-                    <h1 className="text-5xl font-black text-center mt-1.5">Game Finished</h1>
-                    <p className="text-sm text-zinc-500 text-center max-w-sm">
+            <main>
+                <header>
+                    <h1>Game Finished</h1>
+                    <p className="header-p">
                         Congrats! Yall survived the busdriver!
                     </p>
                 </header>
 
-                <div className="bg-zinc-900 border border-zinc-800 rounded-xl w-full p-6 shadow-lg shadow-zinc-800/90">
+                <div className="main-div">
                     <div className="flex flex-row items-center justify-between">
-                        <h2 className="text-3xl font-black">Players</h2>
-                        <span className="text-3xl font-black">{players?.length} / 6</span>
+                        <h2>Players</h2>
+                        <h2>{players?.length} / 6</h2>
                     </div>
 
-                    <div className="pt-4 mt-4 border-t border-zinc-700 flex flex-col gap-3">
+                    <div className="players-list-div">
                         {players ? players.map((player, index) => (
-                            <div key={player._id} className="flex items-center justify-between bg-zinc-800/50 px-4 py-1.5 rounded-xl border border-zinc-700/50">
-                                <div className="flex items-center gap-3 flex-1">
-                                    <div className="w-[50px] h-[50px] bg-zinc-600 rounded-full flex items-center justify-center flex-shrink-0">
-                                        <IoPerson size={35} className="text-zinc-300" />
+                            <div key={player._id} className="player-div">
+                                <div className="player-name-div">
+                                    <div className="profile-pic-div-non-absolute">
+                                        <IoPerson className="profile-pic-icon" />
                                     </div>
 
-                                    <span className="font-bold text-xl truncate max-w-[140px]">
+                                    <span className="font-bold text-base truncate max-w-[100px] sm:text-xl sm:max-w-[250px]">
                                         {player.username || `Player ${index}`}
                                     </span>
                                     
                                     {game.drive.loser === player._id &&
                                         <div className="flex flex-col items-center justify-center ml-2">
-                                            <IoBus size={24} className="text-white" />
+                                            <IoBus size={20} className="text-white" />
                                             <p className="text-lg font-bold">{game.drive.sips ?? 0}</p>
                                         </div>
                                     }
                                 </div>
                                 
-                                <div className="flex flex-row items-center justify-center gap-4">
+                                <div className="flex flex-row items-center justify-center gap-4 sm:gap-8">
                                     <div className="flex items-baseline justify-between">
-                                        <span className="text-xl font-bold mr-2">{game.base.sips?.find(entry => entry.userId === player._id)?.sipsGiven ?? 0}</span>
-                                        <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider">GIVEN</span>
+                                        <span className="text-xl font-bold mr-2 sm:text-3xl">{game.base.sips?.find(entry => entry.userId === player._id)?.sipsGiven ?? 0}</span>
+                                        <span className="text-xs font-medium text-zinc-400 uppercase sm:text-base">G</span>
                                     </div>
                                     <div className="flex items-baseline justify-between">
-                                        <span className="text-xl font-bold mr-2">{game.base.sips?.find(entry => entry.userId === player._id)?.sipsReceived ?? 0}</span>
-                                        <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider">received</span>
+                                        <span className="text-xl font-bold mr-2 sm:text-3xl">{game.base.sips?.find(entry => entry.userId === player._id)?.sipsReceived ?? 0}</span>
+                                        <span className="text-xs font-medium text-zinc-400 uppercase sm:text-base">R</span>
                                     </div>
                                 </div>
                             </div>
@@ -242,9 +242,8 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                     </div>
                 </div>
 
-                <div className="flex-1 flex flex-col justify-end gap-8">
+                <div className="flex-1 flex flex-col justify-end sm:mb-2">
                     <button
-                        className="rounded-xl bg-blue-700 px-6 py-3 text-xl font-black text-white hover:bg-blue-600"
                         onClick={() => router.replace("/")}
                     >
                         Return Home
@@ -283,10 +282,10 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                     <div 
                         key={index} 
                         onClick={() => canReveal && userId && revealDriveCard({ pin: gamePin, userId: userId, index })}
-                        className={`bg-blue-800 rounded-lg w-[80px] h-[110px] flex items-center justify-center shadow-md shrink-0 border-2 transition-all ${canReveal ? "border-white cursor-pointer hover:bg-blue-700 shadow-white/20" : cardsLocked ? "opacity-60 border-zinc-600 cursor-not-allowed" : "opacity-70 border-zinc-500"}`}
+                        className={`card ${canReveal ? "border-white cursor-pointer hover:bg-blue-700 shadow-white/20" : cardsLocked ? "opacity-60 border-zinc-600 cursor-not-allowed" : "opacity-70 border-zinc-500"}`}
                     >
-                        <div className="w-12 h-16 border border-white/20 rounded-sm flex items-center justify-center">
-                            <span className="text-white/20 font-black text-xl">?</span>
+                        <div className="card-middle">
+                            <p className="card-middle-p">?</p>
                         </div>
                     </div>
                 );
@@ -295,9 +294,9 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
             return (
                 <div 
                     key={index} 
-                    className={`bg-white text-black rounded-lg w-[80px] h-[110px] flex items-center justify-center shadow-md shrink-0 border-2 select-none transition-all ${isPenaltyRank ? "border-red-500 ring-3 ring-red-500 shadow-red-500/50" : cardsLocked ? "opacity-80 border-zinc-400" : "border-yellow-400 shadow-yellow-400/40"}`}
+                    className={`card-revealed ${isPenaltyRank ? "border-red-500 ring-3 ring-red-500 shadow-red-500/50" : cardsLocked ? "opacity-80 border-zinc-400" : "border-yellow-400 shadow-yellow-400/40"}`}
                 >
-                    <p className={`text-4xl font-bold ${isRed ? "text-red-600" : "text-black"}`}>
+                    <p className={`card-revealed-p ${isRed ? "text-red-600" : "text-black"}`}>
                         {card}
                     </p>
                 </div>
@@ -307,50 +306,50 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
         const loser = game.drive.loser;
 
         return (
-            <main className="mx-auto min-h-screen w-full max-w-3xl flex flex-col px-8 gap-4">
-                <div className="flex flex-row wrap gap-4 overflow-x-auto w-full justify-center pt-8 pb-4">
+            <main className="!py-0">
+                <div className="players-hands-div wrap">
                     {players?.map((player, idx) => {
                         if (player._id === loser) return null;
                         const playerSips = game.base.sips?.find(user => user.userId === player._id);
                         return (
-                            <div key={idx} className="relative flex flex-col items-center justify-center gap-3 p-2 bg-zinc-800 rounded-lg border border-zinc-700 w-[150px]">
+                            <div key={idx} className="players-hand-div !w-[120px] sm:!w-[150px]">
                                 {playerSips && playerSips.sipsReceived > 0n && (
-                                    <div className="absolute -top-4 -right-3 bg-red-600 text-white font-black px-2 py-0.5 rounded-full shadow-xl">
+                                    <div className="sipcounter">
                                         +{playerSips.sipsReceived.toString()}
                                     </div>
                                 )}
-                                <p className="text-lg font-semibold truncate max-w-[135px]">{player.username}</p>
+                                <p className="players-name-p !max-w-[105px] sm:!max-w-[135px]">{player.username}</p>
                             </div>
                         );
                     })}
                 </div>
 
-                <div className="flex flex-col gap-3 py-4">
-                    <div className="flex flex-row gap-3 justify-center">
+                <div className="flex-1 flex flex-col items-center justify-center gap-2.5 py-1 sm:gap-3 sm:py-2">
+                    <div className="pyramid-row-div">
                         {[0].map(renderBoardCard)}
                     </div>
-                    <div className="flex flex-row gap-3 justify-center">
+                    <div className="pyramid-row-div">
                         {[1, 2].map(renderBoardCard)}
                     </div>
-                    <div className="flex flex-row gap-3 justify-center">
+                    <div className="pyramid-row-div">
                         {[3, 4, 5].map(renderBoardCard)}
                     </div>
-                    <div className="flex flex-row gap-3 justify-center">
+                    <div className="pyramid-row-div">
                         {[6, 7, 8, 9].map(renderBoardCard)}
                     </div>
-                    <div className="flex flex-row gap-3 justify-center">
+                    <div className="pyramid-row-div">
                         {[10, 11, 12, 13, 14].map(renderBoardCard)}
                     </div>
                     {game.drive.finishAt && (
-                        <p className="text-center text-4xl font-black mt-4">Game Finished!</p>
+                        <p className="text-center mt-2 text-3xl font-black sm:mt-4 sm:text-4xl">Game Finished!</p>
                     )}
                 </div>
 
-                <div className="flex flex-col items-center justify-center gap-2 pt-4 pb-10 border-t border-zinc-700 mt-auto">
-                    <p className="flex-1 text-zinc-400">LOSER</p>
-                    <p className="text-3xl font-semibold mb-4 text-blue-500">{players?.find(player => player._id === loser)?.username ?? "Username"}</p>
-                    <strong className="relative text-5xl text-white">{game.drive.sips}
-                        <span className="absolute -right-9 text-zinc-400 text-base">
+                <div className="player-cards-div !gap-1.5">
+                    <p className="flex-1 text-zinc-400 text-xs sm:text-base">LOSER</p>
+                    <p className="text-2xl font-bold text-blue-500 sm:text-3xl">{players?.find(player => player._id === loser)?.username ?? "Username"}</p>
+                    <strong className="relative text-4xl text-white sm:text-5xl">{game.drive.sips}
+                        <span className="absolute -right-9 text-zinc-400 text-sm sm:text-base">
                             ({game?.base.sips?.find(user => user.userId === loser)?.sipsReceived ?? 0})
                         </span>
                     </strong>
@@ -368,10 +367,10 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                     <div 
                         key={index} 
                         onClick={() => userId && pickCard({ pin: gamePin, userId: userId, index })}
-                        className={"bg-blue-800 rounded-lg w-[80px] h-[110px] flex items-center justify-center shadow-md shrink-0 border-2 transition-all border-white cursor-pointer hover:bg-blue-700 shadow-white/20"}
+                        className="card"
                     >
-                        <div className="w-12 h-16 border border-white/20 rounded-sm flex items-center justify-center">
-                            <span className="text-white/20 font-black text-xl">?</span>
+                        <div className="card-middle">
+                            <p className="card-middle-p">?</p>
                         </div>
                     </div>
                 );
@@ -380,61 +379,62 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
             return (
                 <div 
                     key={index}
-                    className={"bg-blue-800 rounded-lg w-[80px] h-[110px] flex items-center justify-center shadow-md shrink-0 border-2 transition-all border-white shadow-white/20 border-yellow-400 ring-3 ring-yellow-400"}
+                    className="bg-blue-800 rounded-lg w-[60px] h-[83px] flex items-center justify-center shadow-md shrink-0 border-2 transition-all border-white shadow-white/20 border-yellow-400 ring-3 ring-yellow-400 sm:w-[80px] sm:h-[110px]"
                 >
-                    <div className="w-12 h-16 border border-white/20 rounded-sm flex items-center justify-center">
-                        <span className="text-white/20 font-black text-xl">?</span>
+                    <div className="card-middle">
+                        <p className="card-middle-p">?</p>
                     </div>
                 </div>
             );
         };
 
         return (
-            <main className="mx-auto min-h-screen w-full max-w-3xl flex flex-col p-8 gap-8">
-                <header className="space-y-2 mx-auto">
-                    <h1 className="text-5xl font-black text-center mt-1.5">Game Tied</h1>
-                    <p className="text-sm text-zinc-500 text-center max-w-sm">
+            <main>
+                <header>
+                    <h1>Game Tied</h1>
+                    <p className="header-p">
                         If you are tied with someone, please pick a card. Once you have picked a card, you can reveal it by pressing on it.
                     </p>
                 </header>
 
-                <div className="w-full flex flex-col p-4 gap-8">
-                    <div className="flex flex-row gap-8 justify-center">
+                <div className="w-full flex flex-col p-2 gap-5 sm:p-4 sm:gap-8">
+                    <div className="flex flex-row gap-5 justify-center sm:gap-8">
                         {[0, 1, 2].map(renderBoardCard)}
                     </div>
-                    <div className="flex flex-row gap-8 justify-center">
+                    <div className="flex flex-row gap-5 justify-center sm:gap-8">
                         {[3, 4, 5].map(renderBoardCard)}
                     </div>
                 </div>
 
-                <div className="flex flex-row flex-wrap items-center justify-center gap-4">
+                <div className="flex flex-row flex-wrap overflow-y-auto items-center justify-center gap-2.5 sm:gap-4">
                     {players?.map((player, idx) => {
                         if (!game.tie?.tiedPlayers.map(p => p.userId).includes(player._id)) { return null; }
                         const tiedPlayer = game.tie?.tiedPlayers.find(p => p.userId === player._id);
                         const card = tiedPlayer?.cardPicked !== undefined ? game.tie.cards[tiedPlayer.cardPicked] : undefined;
                         const isRed = card?.toString().includes("♡") || card?.toString().includes("♢");
                         const revealed = tiedPlayer?.revealed;
+                        const isLoser = game.drive.loser === player._id;
 
                         return (
-                            <div key={idx} className="flex flex-col items-center justify-center gap-3 p-3 bg-zinc-800 rounded-lg border border-zinc-700 w-[130px]">
-                                <p className="text-lg font-semibold truncate max-w-[115px]">{player.username}</p>
+                            <div key={idx} className="flex flex-col items-center justify-center gap-1.5 p-1.5 w-[110px] bg-zinc-800 rounded-lg border border-zinc-700 sm:w-[130px] sm:gap-3 sm:p-3">
+                                <p className="text-base font-semibold truncate max-w-[95px] sm:text-lg sm:max-w-[115px]">{player.username}</p>
                                 {card && revealed ? (
-                                    <div className={"bg-white text-black rounded-lg w-[64px] h-[88px] flex items-center justify-center shadow-md shrink-0 border-2 select-none transition-all"}>
-                                        <p className={`text-4xl font-bold ${isRed ? "text-red-600" : "text-black"}`}>
+                                    <div className={`card-revealed ${isLoser ? "border-red-500 ring-3 ring-red-500 shadow-red-500/50" : ""}`}>
+                                        <p className={`card-revealed-p ${isRed ? "text-red-600" : "text-black"}`}>
                                             {card}
                                         </p>
                                     </div>
                                 ) : card ? (
                                     <div 
-                                        className={"bg-blue-800 rounded-lg w-[64px] h-[88px] flex items-center justify-center shadow-md shrink-0 border-2 transition-all border-white cursor-pointer hover:bg-blue-700 shadow-white/20"}
+                                        className="card"
                                         onClick={() => userId && tiedPlayer?.cardPicked !== undefined && revealTieBreaker({ pin: gamePin, userId: userId })}
                                     >
-                                        <div className="w-9 h-12 border border-white/20 rounded-sm flex items-center justify-center">
-                                            <span className="text-white/20 font-black text-xl">?</span>
+                                        <div className="card-middle">
+                                            <p className="card-middle-p">?</p>
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className={"rounded-lg w-[64px] h-[88px] shadow-md shrink-0 border-2 transition-all border-zinc-500 shadow-white/10"}></div>
+                                    <div className="rounded-lg w-[60px] h-[83px] shadow-md shrink-0 border-2 transition-all border-zinc-500 shadow-white/10"></div>
                                 )}
                             </div>
                         )
@@ -442,10 +442,10 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                 </div>
 
                 {tieBreakersRevealed && (
-                    <div className="flex flex-col items-center justify-center mt-2">
-                        <p className="flex-1 text-zinc-400">LOSER</p>
-                        <p className="text-3xl font-semibold mb-10">{players?.find(p => p._id === game.drive.loser)?.username || ""}</p>
-                        <p className="text-2xl font-bold text-blue-500">The driving will begin in 5 seconds...</p>
+                    <div className="flex flex-col items-center justify-center sm:mt-2">
+                        <p className="text-base flex-1 text-zinc-400 sm:text-lg">LOSER</p>
+                        <p className="text-2xl font-semibold mb-10 sm:text-3xl">{players?.find(p => p._id === game.drive.loser)?.username || ""}</p>
+                        <p className="text-xl font-bold text-center text-blue-500 sm:text-2xl">The driving will begin in 5 seconds...</p>
                     </div>
                 )}
             </main>
@@ -482,10 +482,10 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                     <div 
                         key={index} 
                         onClick={() => revealCard({ pin: gamePin, index })}
-                        className={`bg-blue-800 rounded-lg w-[80px] h-[110px] flex items-center justify-center shadow-md shrink-0 border-2 transition-all ${isActiveRow ? "border-white cursor-pointer hover:bg-blue-700 shadow-white/20" : "opacity-70 border-zinc-500"}`}
+                        className={`card ${isActiveRow ? "card-active" : "card-inactive"}`}
                     >
-                        <div className="w-12 h-16 border border-white/20 rounded-sm flex items-center justify-center">
-                            <span className="text-white/20 font-black text-xl">?</span>
+                        <div className="card-middle">
+                            <p className="card-middle-p">?</p>
                         </div>
                     </div>
                 );
@@ -494,9 +494,9 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
             return (
                 <div 
                     key={index} 
-                    className={`bg-white text-black rounded-lg w-[80px] h-[110px] flex items-center justify-center shadow-md shrink-0 border-2 select-none transition-all ${isActiveRow ? "border-yellow-400 shadow-yellow-400/40" : "opacity-80 border-zinc-400"}`}
+                    className={`card-revealed ${isActiveRow ? "card-revealed-active" : "card-inactive"}`}
                 >
-                    <p className={`text-4xl font-bold ${isRed ? "text-red-600" : "text-black"}`}>
+                    <p className={`card-revealed-p ${isRed ? "text-red-600" : "text-black"}`}>
                         {card}
                     </p>
                 </div>
@@ -504,23 +504,23 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
         };
 
         return (
-            <main className="mx-auto min-h-screen w-full max-w-3xl flex flex-col px-8 gap-4">
-                <div className="flex flex-row gap-4 overflow-x-auto w-full justify-center pt-8 pb-4">
+            <main className="!py-0">
+                <div className="players-hands-div">
                     {players?.map((player, idx) => {
                         if (player._id === userId) return null;
                         const hand = game.base.playerHands?.find(hand => hand.userId === player._id);
                         const playerSips = game.base.sips?.find(user => user.userId === player._id);
                         return (
-                            <div key={idx} className="relative flex flex-col items-center justify-center gap-3 p-2 bg-zinc-800 rounded-lg border border-zinc-700 w-[105px]">
-                                {playerSips && playerSips.sipsReceived > 0n && (
-                                    <div className="absolute -top-4 -right-3 bg-red-600 text-white font-black px-2 py-0.5 rounded-full shadow-xl">
+                            <div key={idx} className="players-hand-div">
+                                {playerSips && playerSips.sipsReceived > 0 && (
+                                    <div className="sipcounter">
                                         +{playerSips.sipsReceived.toString()}
                                     </div>
                                 )}
-                                <p className="text-lg font-semibold truncate max-w-[90px]">{player.username}</p>
+                                <p className="players-name-p">{player.username}</p>
                                 <div className="flex flex-row -space-x-0.5">
                                     {hand?.cards.map((_, idx) => (
-                                        <div key={idx} className="bg-blue-800 rounded-sm w-[15px] h-[24px] border border-white/30 shadow-sm shadow-black/50"></div>
+                                        <div key={idx} className="bg-blue-800 rounded-sm w-[12px] h-[19px] border border-white/30 shadow-sm shadow-black/50 sm:w-[15px] sm:h-[24px]"></div>
                                     ))}
                                 </div>
                             </div>
@@ -528,48 +528,48 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                     })}
                 </div>
                 
-                <div className="relative flex flex-col gap-3 py-4">
+                <div className="flex-1 relative flex flex-col items-center justify-center gap-2.5 py-1 sm:gap-3 sm:py-2">
                     {isBaseGameDone && (
                         <button
-                            className="flex flex-col items-center justify-center gap-1 absolute right-0 top-8 bg-blue-700 hover:bg-blue-600 text-white font-black p-4 rounded-xl text-xl transition-all shadow-lg shadow-blue-700/20 active:scale-[0.95]"
+                            className="!w-[90px] flex flex-col items-center justify-center gap-1 absolute right-0 top-4 !bg-blue-700 hover:!bg-blue-600 !p-1 !text-base !shadow-blue-700/20 sm:!text-xl sm:!w-[120px]"
                             onClick={() => userId && readyUp({ id: userId, pin: gamePin, isStart: false })}
                         >
                             Ready
                             <span>{game?.drive?.ready?.length ?? 0} / {game.players.length}</span>
                         </button>
                     )}
-                    <div className="flex flex-row gap-3 justify-center">
+                    <div className="pyramid-row-div">
                         {[0].map(renderBoardCard)}
                     </div>
-                    <div className="flex flex-row gap-3 justify-center">
+                    <div className="pyramid-row-div">
                         {[1, 2].map(renderBoardCard)}
                     </div>
-                    <div className="flex flex-row gap-3 justify-center">
+                    <div className="pyramid-row-div">
                         {[3, 4, 5].map(renderBoardCard)}
                     </div>
-                    <div className="flex flex-row gap-3 justify-center">
+                    <div className="pyramid-row-div">
                         {[6, 7, 8, 9].map(renderBoardCard)}
                     </div>
-                    <div className="flex flex-row gap-3 justify-center">
+                    <div className="pyramid-row-div">
                         {[10, 11, 12, 13, 14].map(renderBoardCard)}
                     </div>
                 </div>
 
 
-                <div className="flex flex-col items-center justify-center gap-3 pt-3 pb-2 border-t border-zinc-700 mt-auto">
-                    <div className="flex flex-row items-center justify-center gap-16 w-full">
-                        <span className="flex-1 text-right text-zinc-400">
+                <div className="player-cards-div">
+                    <div className="player-stats-div">
+                        <span className="flex-1 text-right text-zinc-400 text-xs sm:text-base">
                             GIVEN
-                            <strong className="ml-4 text-3xl text-white">{mySips?.sipsGiven?.toString() ?? 0}</strong>
+                            <strong className="ml-2 text-2xl text-white sm:ml-4 sm:text-3xl">{mySips?.sipsGiven?.toString() ?? 0}</strong>
                         </span>
-                        <p className="text-3xl font-bold text-blue-500 -mx-6">{players?.find(player => player._id === userId)?.username ?? "Username"}</p>    
-                        <span className="flex-1 text-zinc-400">
-                            <strong className="mr-4 text-3xl text-white">{mySips?.sipsReceived?.toString() ?? 0}</strong>
+                        <p className="text-2xl font-bold text-blue-500 sm:text-3xl">{players?.find(player => player._id === userId)?.username ?? "Username"}</p>    
+                        <span className="flex-1 text-zinc-400 text-xs sm:text-base">
+                            <strong className="mr-2 text-2xl text-white sm:mr-4 sm:text-3xl">{mySips?.sipsReceived?.toString() ?? 0}</strong>
                             RECEIVED
                         </span>
                     </div>
 
-                    <div className="flex justify-center gap-2.5 overflow-x-auto w-full px-4 pt-2.5 pb-8">
+                    <div className="flex flex-row justify-center gap-2.5 overflow-x-auto w-full pt-2.5">
                         {myHand?.map((card, idx) => {
                             const isRed = card.includes("♡") || card.includes("♢");
                             const playerCardRank = card.replace(/[♠♣♡♢]/g, "");
@@ -594,9 +594,9 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                                             });
                                         }
                                     }}
-                                    className={`bg-white text-black rounded-lg w-[75px] h-[105px] flex items-center justify-center shadow-lg shrink-0 border-2 select-none transition-all ${canPlay ? "cursor-pointer border-yellow-400 ring-2 ring-yellow-400 -translate-y-2 shadow-yellow-400/40" : "opacity-90 border-zinc-300"}`}
+                                    className={`card-revealed ${canPlay ? "cursor-pointer border-yellow-400 ring-2 ring-yellow-400 -translate-y-2 shadow-yellow-400/40" : "opacity-85 border-zinc-300"}`}
                                 >
-                                    <p className={`text-4xl font-bold ${isRed ? "text-red-600" : "text-black"}`}>
+                                    <p className={`card-revealed-p ${isRed ? "text-red-600" : "text-black"}`}>
                                         {card}
                                     </p>
                                 </div>
@@ -610,21 +610,21 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
 
                 {sipDistribution && (
                     <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-                        <div className="bg-zinc-900 border border-zinc-800 rounded-xl w-full max-w-md p-6 shadow-lg shadow-zinc-800/90">
-                            <h2 className="text-2xl font-black text-center mb-1">Distribute Sips</h2>
-                            <p className="text-blue-500 text-center font-bold mb-6">
+                        <div className="main-div max-w-md">
+                            <h2 className="text-center py-1">Distribute Sips</h2>
+                            <p className="text-blue-500 text-center font-bold mb-4">
                                 Sips: {Object.values(sipDistribution.assignments).reduce((a, b) => a + b, 0)} / {sipDistribution.total}
                             </p>
                             
-                            <div className="flex flex-col gap-4 max-h-[60vh] overflow-y-auto mb-6">
+                            <div className="flex flex-col gap-2 max-h-[80vh] overflow-y-auto mb-6">
                                 {players?.map(player => (
-                                    <div key={player._id} className="flex items-center justify-between bg-zinc-800/50 p-4 rounded-xl border border-zinc-700/50">
+                                    <div key={player._id} className="player-div !p-2.5">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-[50px] h-[50px] bg-zinc-600 rounded-full flex items-center justify-center">
-                                                <IoPerson size={35} className="text-zinc-300" />
+                                            <div className="w-[40px] h-[40px] bg-zinc-600 rounded-full flex items-center justify-center flex-shrink-0 sm:w-[50px] sm:h-[50px]">
+                                                <IoPerson className="text-zinc-300 w-[28px] h-[28px] sm:w-[35px] sm:h-[35px]" />
                                             </div>
-                                            <span className="font-bold text-xl truncate max-w-[130px]">
-                                                {player._id === userId ? "You" : player.username}
+                                            <span className="player-p">
+                                                {player.username}
                                             </span>
                                         </div>
                                         
@@ -639,9 +639,9 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                                                         });
                                                     }
                                                 }}
-                                                className="w-[38px] h-[38px] rounded-full bg-zinc-700 flex items-center justify-center hover:bg-zinc-600 active:scale-[0.9] transition-all"
+                                                className="!w-[40px] !h-[40px] !rounded-full !bg-blue-700 flex items-center justify-center hover:!bg-blue-600 sm:!w-[50px] sm:!h-[50px]"
                                             >
-                                                <IoRemove size={20} />
+                                                <IoRemove size={25} />
                                             </button>
                                             
                                             <span className="text-2xl font-black w-5 text-center">
@@ -659,9 +659,9 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                                                         });
                                                     }
                                                 }}
-                                                className="w-[38px] h-[38px] rounded-full bg-blue-600 flex items-center justify-center hover:bg-blue-500 active:scale-[0.9] transition-all text-white"
+                                                className="!w-[40px] !h-[40px] !rounded-full !bg-blue-700 flex items-center justify-center hover:!bg-blue-600 sm:!w-[50px] sm:!h-[50px]"
                                             >
-                                                <IoAdd size={20} />
+                                                <IoAdd size={25} />
                                             </button>
                                         </div>
                                     </div>
@@ -685,7 +685,6 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                                     }
                                 }}
                                 disabled={Object.values(sipDistribution.assignments).reduce((a, b) => a + b, 0) !== sipDistribution.total}
-                                className="w-full bg-green-600 hover:bg-green-500 disabled:bg-zinc-700 disabled:text-zinc-500 text-white font-black py-4 rounded-xl text-xl transition-all shadow-lg shadow-green-600/20 disabled:shadow-zinc-500/20 active:scale-[0.98] disabled:cursor-not-allowed"
                             >
                                 Done
                             </button>
@@ -714,11 +713,11 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                         <h2>{players?.length} / 6</h2>
                     </div>
 
-                    <div className="pt-2.5 mt-2.5 border-t border-zinc-700 flex flex-col gap-2 sm:pt-4 sm:mt-4 sm:gap-3">
+                    <div className="players-list-div">
                         {players ? players.map((player, index) => (
                             <div key={player._id} className="player-div">
-                                <div className="flex items-center gap-2 flex-1 sm:gap-3">
-                                    <div className="w-[40px] h-[40px] bg-zinc-600 rounded-full flex items-center justify-center flex-shrink-0 sm:w-[50px] sm:h-[50px]">
+                                <div className="player-name-div">
+                                    <div className="profile-pic-div-non-absolute">
                                         <IoPerson className="profile-pic-icon" />
                                     </div>
                                     <p className="player-p">

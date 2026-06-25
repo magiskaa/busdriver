@@ -65,22 +65,22 @@ export default function ProfilePage() {
                 
                 <div className="grid grid-cols-2 gap-y-4 border-t border-zinc-700 pt-4 sm:pt-8">
                     <p className="profile-stats-p">
-                        Games: <strong className="profile-stats-strong">{getStats?.games?.toString() || 0}</strong>
+                        GAMES: <strong className="profile-stats-strong">{getStats?.games?.toString() || 0}</strong>
                     </p>
                     <p className="profile-stats-p">
-                        Sips given: <strong className="profile-stats-strong">{getStats?.sipsGiven?.toString() || 0}</strong>
+                        SIPS GIVEN: <strong className="profile-stats-strong">{getStats?.sipsGiven?.toString() || 0}</strong>
                     </p>
                     <p className="profile-stats-p">
-                        Lost games: <strong className="profile-stats-strong">{getStats?.lostGames?.toString() || 0}</strong>
+                        LOST GAMES: <strong className="profile-stats-strong">{getStats?.lostGames?.toString() || 0}</strong>
                     </p>
                     <p className="profile-stats-p">
-                        Sips received: <strong className="profile-stats-strong">{getStats?.sipsReceived?.toString() || 0}</strong>
+                        SIPS RECEIVED: <strong className="profile-stats-strong">{getStats?.sipsReceived?.toString() || 0}</strong>
                     </p>
                     <p className="profile-stats-p">
                         L%: <strong className="profile-stats-strong">{getStats ? (getStats.lostGames * 100) / (getStats.games || 1) : 0}%</strong>
                     </p>
                     <p className="profile-stats-p">
-                        Driving sips: <strong className="profile-stats-strong">{getStats?.drivingSips?.toString() || 0}</strong>
+                        DRIVING SIPS: <strong className="profile-stats-strong">{getStats?.drivingSips?.toString() || 0}</strong>
                     </p>
                 </div>
             </div>

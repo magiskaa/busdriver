@@ -69,13 +69,14 @@ h1 {
 
 .profile-stats-p {
 	@apply 
-	text-lg text-zinc-400
-	sm:text-xl
+	text-sm text-zinc-400 tracking-wider
+	sm:text-lg
 }
 
 .profile-stats-strong {
 	@apply
-	text-white
+	text-white text-lg
+	sm:text-2xl
 }
 
 
@@ -136,10 +137,23 @@ input {
 	sm:px-4 sm:py-3
 }
 
+
+/* WAITING & FINISHED */
 .player-div {
 	@apply
 	flex items-center justify-between bg-zinc-800/50 px-1.5 py-1 rounded-lg border border-zinc-700/50
 	sm:px-3 sm:py-1.5
+}
+
+.player-name-div {
+	@apply
+	flex items-center gap-2 flex-1 
+	sm:gap-3
+}
+
+.profile-pic-div-non-absolute {
+	@apply
+	w-[40px] h-[40px] bg-zinc-600 rounded-full flex items-center justify-center flex-shrink-0 sm:w-[50px] sm:h-[50px]
 }
 
 .player-p {
@@ -152,4 +166,102 @@ input {
 	@apply
 	flex flex-col text-base font-bold bg-zinc-700/50 px-1.5 py-0.5 rounded-lg border border-zinc-700 min-w-[83px] justify-between 
 	sm:text-xl sm:px-3 sm:py-1 sm:min-w-[110px]
+}
+
+
+/* ACTIVE & DRIVING */
+.players-hands-div {
+	@apply
+	flex flex-row gap-2.5 overflow-x-auto w-full justify-center pt-4
+	sm:gap-4 sm:pt-6 sm:pb-2
+}
+
+.players-hand-div {
+	@apply
+	relative bg-zinc-800 flex flex-col items-center justify-center gap-2 p-1 rounded-lg border border-zinc-700 w-[70px]
+	sm:w-[105px] sm:gap-3 sm:p-2
+}
+
+.sipcounter {
+	@apply
+	absolute -top-3 -right-2 bg-red-600 text-white font-black px-1 py-0.5 text-sm rounded-full shadow-xl
+	sm:-top-4 sm:-right-3 sm:px-2 sm:text-base
+}
+
+.players-name-p {
+	@apply
+	text-sm mt-0.5 font-semibold truncate max-w-[60px]
+	sm:text-lg sm:max-w-[90px]
+}
+
+.pyramid-row-div {
+	@apply
+	flex flex-row gap-2.5 justify-center
+	sm:gap-3
+}
+
+.player-cards-div {
+	@apply
+	flex flex-col items-center justify-center gap-3 pt-3 pb-4 border-t border-zinc-700 mt-auto
+	sm:pt-5 sm:pb-8
+}
+
+.player-stats-div {
+	@apply
+	flex flex-row items-baseline justify-center gap-5 w-full
+	sm:gap-10
+}
+
+.players-list-div {
+	@apply
+	pt-2.5 mt-2.5 border-t border-zinc-700 flex flex-col gap-2 
+	sm:pt-4 sm:mt-4 sm:gap-3
+}
+
+
+/* UNREVEALED CARD */
+.card {
+	@apply
+	bg-blue-800 rounded-lg w-[60px] h-[83px] flex items-center justify-center shadow-md shrink-0 border-2 transition-all
+	sm:w-[80px] sm:h-[110px]
+}
+
+.card-active {
+	@apply
+	border-white cursor-pointer hover:bg-blue-700 shadow-white/20
+}
+
+.card-inactive {
+	@apply
+	opacity-70 border-zinc-500
+}
+
+.card-middle {
+	@apply
+	w-9 h-13 border border-white/20 rounded-sm flex items-center justify-center
+	sm:w-12 sm:h-16
+}
+
+.card-middle-p {
+	@apply
+	text-white/20 font-black text-xl
+}
+
+
+/* REVEALED CARD */
+.card-revealed {
+	@apply
+	bg-white rounded-lg w-[60px] h-[83px] flex items-center justify-center shadow-md shrink-0 border-2 select-none transition-all
+	sm:w-[80px] sm:h-[110px]
+}
+
+.card-revealed-active {
+	@apply
+	border-yellow-400 shadow-yellow-400/40
+}
+
+.card-revealed-p {
+	@apply
+	text-3xl font-bold
+	sm:text-4xl
 }
