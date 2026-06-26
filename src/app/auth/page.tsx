@@ -27,7 +27,7 @@ export default function AuthForm() {
     }
 
     return (
-        <main className="flex min-h-screen w-full flex-col items-center justify-center p-8">
+        <main className="justify-center">
             <h1 className="!text-5xl mb-4 sm:text-6xl sm:mb-12">Busdriver</h1>
             <form
                 className="main-div grid gap-3 sm:p-8 sm:gap-4"

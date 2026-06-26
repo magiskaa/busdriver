@@ -197,7 +197,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                 <header>
                     <h1>Game Finished</h1>
                     <p className="header-p">
-                        Congrats! Yall survived the busdriver!
+                        Congrats! Y'all survived the busdriver!
                     </p>
                 </header>
 
@@ -215,7 +215,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                                         <IoPerson className="profile-pic-icon" />
                                     </div>
 
-                                    <span className="font-bold text-base truncate max-w-[100px] sm:text-xl sm:max-w-[250px]">
+                                    <span className="font-bold text-base truncate max-w-[100px] sm:text-xl sm:max-w-[230px]">
                                         {player.username || `Player ${index}`}
                                     </span>
                                     
@@ -242,7 +242,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                     </div>
                 </div>
 
-                <div className="flex-1 flex flex-col justify-end sm:mb-2">
+                <div className="bottom-button-div">
                     <button
                         onClick={() => router.replace("/")}
                     >
@@ -312,7 +312,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                         if (player._id === loser) return null;
                         const playerSips = game.base.sips?.find(user => user.userId === player._id);
                         return (
-                            <div key={idx} className="players-hand-div !w-[120px] sm:!w-[150px]">
+                            <div key={idx} className="players-hand-div !w-[110px] sm:!w-[135px]">
                                 {playerSips && playerSips.sipsReceived > 0n && (
                                     <div className="sipcounter">
                                         +{playerSips.sipsReceived.toString()}
@@ -345,9 +345,9 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                     )}
                 </div>
 
-                <div className="player-cards-div !gap-1.5">
+                <div className="player-cards-div !gap-0">
                     <p className="flex-1 text-zinc-400 text-xs sm:text-base">LOSER</p>
-                    <p className="text-2xl font-bold text-blue-500 sm:text-3xl">{players?.find(player => player._id === loser)?.username ?? "Username"}</p>
+                    <p className="text-2xl font-bold text-blue-500 mb-2 sm:text-3xl">{players?.find(player => player._id === loser)?.username ?? "Username"}</p>
                     <strong className="relative text-4xl text-white sm:text-5xl">{game.drive.sips}
                         <span className="absolute -right-9 text-zinc-400 text-sm sm:text-base">
                             ({game?.base.sips?.find(user => user.userId === loser)?.sipsReceived ?? 0})
@@ -379,7 +379,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
             return (
                 <div 
                     key={index}
-                    className="bg-blue-800 rounded-lg w-[60px] h-[83px] flex items-center justify-center shadow-md shrink-0 border-2 transition-all border-white shadow-white/20 border-yellow-400 ring-3 ring-yellow-400 sm:w-[80px] sm:h-[110px]"
+                    className="bg-blue-800 rounded-lg w-[56px] h-[77px] flex items-center justify-center shadow-md shrink-0 border-2 transition-all border-white shadow-white/20 border-yellow-400 ring-3 ring-yellow-400 sm:w-[80px] sm:h-[110px]"
                 >
                     <div className="card-middle">
                         <p className="card-middle-p">?</p>
@@ -443,8 +443,8 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
 
                 {tieBreakersRevealed && (
                     <div className="flex flex-col items-center justify-center sm:mt-2">
-                        <p className="text-base flex-1 text-zinc-400 sm:text-lg">LOSER</p>
-                        <p className="text-2xl font-semibold mb-10 sm:text-3xl">{players?.find(p => p._id === game.drive.loser)?.username || ""}</p>
+                        <p className="text-sm flex-1 text-zinc-400 sm:text-lg">LOSER</p>
+                        <p className="text-2xl font-semibold mb-3 sm:text-3xl sm:mb-6">{players?.find(p => p._id === game.drive.loser)?.username || "magiskaa"}</p>
                         <p className="text-xl font-bold text-center text-blue-500 sm:text-2xl">The driving will begin in 5 seconds...</p>
                     </div>
                 )}
@@ -528,7 +528,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                     })}
                 </div>
                 
-                <div className="flex-1 relative flex flex-col items-center justify-center gap-2.5 py-1 sm:gap-3 sm:py-2">
+                <div className="flex-1 relative flex flex-col items-center justify-center gap-2 py-1 sm:gap-3 sm:py-2">
                     {isBaseGameDone && (
                         <button
                             className="!w-[90px] flex flex-col items-center justify-center gap-1 absolute right-0 top-4 !bg-blue-700 hover:!bg-blue-600 !p-1 !text-base !shadow-blue-700/20 sm:!text-xl sm:!w-[120px]"
@@ -731,7 +731,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                                         <span className="text-xs font-medium text-zinc-400 uppercase tracking-narrow sm:tracking-wider">Games</span>
                                     </div>
                                     <div className="flex items-baseline justify-between">
-                                        <span>{(player.lostGames * 100) / (player.games || 1)}%</span>
+                                        <span>{((player.lostGames * 100) / (player.games || 1)).toFixed(1)}%</span>
                                         <span className="text-xs font-medium text-zinc-400 uppercase tracking-narrow sm:tracking-wider">L%</span>
                                     </div>
                                 </div>

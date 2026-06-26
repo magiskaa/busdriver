@@ -128,10 +128,11 @@ export default function Home() {
 
 				<form className="mt-2 flex flex-col gap-3 sm:mt-4 sm:gap-4" onSubmit={handleJoining}>
 					<input
+						className="uppercase"
 						name="text"
-						placeholder="PIN code"
+						placeholder="PIN"
 						value={pin}
-						onChange={(event) => setPin(event.target.value)}
+						onChange={(event) => setPin(event.target.value.toUpperCase())}
 						disabled={isJoining}
 					/>
 					<button

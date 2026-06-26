@@ -53,7 +53,7 @@ export default function ProfilePage() {
                         <IoPerson className="text-zinc-300 w-[70px] h-[70px] sm:w-[84px] sm:h-[84px]" />
                     </div>
                     <div className="overflow-hidden">
-                        <h2 className="truncate max-w-[200px]">{user?.username || "Username"}</h2>
+                        <h2 className="!text-2xl truncate max-w-[200px]">{user?.username || "Username"}</h2>
                         <button
                             className="max-w-fit border border-zinc-700 px-2 mt-4 !bg-zinc-800 hover:!bg-zinc-700 !text-sm !text-zinc-300 !py-1 !shadow-zinc-800/20 sm:px-4 sm:!mt-6 sm:!text-xl"
                             onClick={editProfile}
@@ -77,7 +77,7 @@ export default function ProfilePage() {
                         SIPS RECEIVED: <strong className="profile-stats-strong">{getStats?.sipsReceived?.toString() || 0}</strong>
                     </p>
                     <p className="profile-stats-p">
-                        L%: <strong className="profile-stats-strong">{getStats ? (getStats.lostGames * 100) / (getStats.games || 1) : 0}%</strong>
+                        L%: <strong className="profile-stats-strong">{getStats ? ((getStats.lostGames * 100) / (getStats.games || 1)).toFixed(1) : 0}%</strong>
                     </p>
                     <p className="profile-stats-p">
                         DRIVING SIPS: <strong className="profile-stats-strong">{getStats?.drivingSips?.toString() || 0}</strong>
@@ -85,12 +85,14 @@ export default function ProfilePage() {
                 </div>
             </div>
 
-            <button
-                className="!bg-red-700 hover:!bg-red-600 !shadow-red-700/20"
-                onClick={() => signOut()}
-            >
-                Sign out
-            </button>
+            <div className="bottom-button-div">
+                <button
+                    className="!bg-red-700 hover:!bg-red-600 !shadow-red-700/20"
+                    onClick={() => signOut()}
+                >
+                    Sign out
+                </button>
+            </div>
         </main>
     );
 }
