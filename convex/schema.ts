@@ -30,6 +30,7 @@ export default defineSchema({
             playerHands: v.optional(v.array(v.object({
                 userId: v.id("users"),
                 cards: v.array(v.string()),
+                counter: v.optional(v.number()),
             }))),
             sips: v.optional(v.array(v.object({
                 userId: v.id("users"),

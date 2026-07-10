@@ -6,6 +6,7 @@ import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
 import { IoPerson, IoArrowBack, IoCheckmark, IoClose, IoAdd, IoRemove, IoBus } from "react-icons/io5";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function GamePage({ params }: { params: Promise<{ pin: string }>; }) {
     const router = useRouter();
@@ -13,6 +14,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
     const [nowTs, setNowTs] = useState(0);
     
     const userId = useQuery(api.users.getUserId);
+    const user = useQuery(api.users.getUser);
     const game = useQuery(api.games.getGame, gamePin ? { pin: gamePin } : "skip");
     const players = useQuery(api.games.getPlayers, game?.players ? { pin: gamePin, ids: game.players } : "skip");
     
@@ -21,6 +23,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
     const revealCard = useMutation(api.games.revealCard);
     const playCard = useMutation(api.games.playCard);
     const distributeSips = useMutation(api.games.distributeSips);
+    const updateCounter = useMutation(api.games.updateCounter);
     const tied = useMutation(api.games.tied);
     const pickCard = useMutation(api.games.pickCard);
     const revealTieBreaker = useMutation(api.games.revealTieBreaker);
@@ -29,7 +32,6 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
     const revealDriveCard = useMutation(api.games.revealDriveCard);
     const resolveDriveRound = useMutation(api.games.resolveDriveRound);
     const finalizeDrive = useMutation(api.games.finalizeDrive);
-    const updateStats = useMutation(api.stats.update);
     
     const [sipDistribution, setSipDistribution] = useState<{
         total: number;
@@ -152,30 +154,13 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
             players &&
             Date.now() > game.drive.finishAt
         ) {
-            for (const player of players) {
-                const id = player._id;
-                
-                const sipsReceived = game.base.sips?.find(entry => entry.userId === id)?.sipsReceived ?? 0;
-                const sipsGiven = game.base.sips?.find(entry => entry.userId === id)?.sipsGiven ?? 0;
-
-                let lostGames = 0;
-                let drivingSips = 0;
-                const isLoser = game.drive.loser === id;
-                
-                if (isLoser) {
-                    lostGames = 1;
-                    drivingSips = game.drive.sips ?? 0;
-                }
-
-                updateStats({ userId: id, games: 1, sipsReceived, sipsGiven, lostGames, drivingSips })
-            }
-
             isFinalizingDriveRef.current = true;
             finalizeDrive({ pin: gamePin }).finally(() => {
                 isFinalizingDriveRef.current = false;
             });
         }
-    }, [game, gamePin, nowTs, finalizeDrive, userId, players, updateStats]);
+    }, [game, gamePin, nowTs, finalizeDrive, userId, players]);
+
 
     if (game === null) {
         return (
@@ -197,7 +182,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                 <header>
                     <h1>Game Finished</h1>
                     <p className="header-p">
-                        Congrats! Y'all survived the busdriver!
+                        Congrats! Y&apos;all survived the busdriver!
                     </p>
                 </header>
 
@@ -211,8 +196,17 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                         {players ? players.map((player, index) => (
                             <div key={player._id} className="player-div">
                                 <div className="player-name-div">
-                                    <div className="profile-pic-div-non-absolute">
-                                        <IoPerson className="profile-pic-icon" />
+                                    <div className="profile-pic-div-non-absolute relative">
+                                        {player?.imageUrl ? (
+                                            <Image 
+                                                src={player.imageUrl} 
+                                                alt="Avatar" 
+                                                fill
+                                                className="object-cover"
+                                            />
+                                        ) : (
+                                            <IoPerson className="profile-pic-icon" />
+                                        )}
                                     </div>
 
                                     <span className="font-bold text-base truncate max-w-[100px] sm:text-xl sm:max-w-[230px]">
@@ -221,8 +215,8 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                                     
                                     {game.drive.loser === player._id &&
                                         <div className="flex flex-col items-center justify-center ml-2">
-                                            <IoBus size={20} className="text-white" />
-                                            <p className="text-lg font-bold">{game.drive.sips ?? 0}</p>
+                                            <IoBus size={16} className="text-white" />
+                                            <p className="text-base font-bold sm:text-lg">{game.drive.sips ?? 0}</p>
                                         </div>
                                     }
                                 </div>
@@ -294,7 +288,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
             return (
                 <div 
                     key={index} 
-                    className={`card-revealed ${isPenaltyRank ? "border-red-500 ring-3 ring-red-500 shadow-red-500/50" : cardsLocked ? "opacity-80 border-zinc-400" : "border-yellow-400 shadow-yellow-400/40"}`}
+                    className={`card-revealed ${isPenaltyRank ? "border-red-500 ring-2 ring-red-500 shadow-red-500/50" : cardsLocked ? "opacity-80 border-zinc-400" : "border-yellow-400 shadow-yellow-400/40"}`}
                 >
                     <p className={`card-revealed-p ${isRed ? "text-red-600" : "text-black"}`}>
                         {card}
@@ -504,7 +498,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
         };
 
         return (
-            <main className="!py-0">
+            <main className="!py-0 !gap-1.5 sm:!gap-4">
                 <div className="players-hands-div">
                     {players?.map((player, idx) => {
                         if (player._id === userId) return null;
@@ -528,10 +522,10 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                     })}
                 </div>
                 
-                <div className="flex-1 relative flex flex-col items-center justify-center gap-2 py-1 sm:gap-3 sm:py-2">
+                <div className="flex-1 relative flex flex-col items-center justify-center gap-1.5 py-0 sm:gap-3 sm:py-2">
                     {isBaseGameDone && (
                         <button
-                            className="!w-[90px] flex flex-col items-center justify-center gap-1 absolute right-0 top-4 !bg-blue-700 hover:!bg-blue-600 !p-1 !text-base !shadow-blue-700/20 sm:!text-xl sm:!w-[120px]"
+                            className={`!w-[90px] flex flex-col items-center justify-center gap-1 absolute right-0 top-4 !p-1 !text-base sm:!text-xl sm:!w-[120px] ${userId && game.drive.ready.includes(userId) ? "!bg-green-600 hover:!bg-green-500 !shadow-green-600/20" : "!bg-red-700 hover:!bg-red-600 !shadow-red-700/20"}`}
                             onClick={() => userId && readyUp({ id: userId, pin: gamePin, isStart: false })}
                         >
                             Ready
@@ -558,15 +552,21 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
 
                 <div className="player-cards-div">
                     <div className="player-stats-div">
-                        <span className="flex-1 text-right text-zinc-400 text-xs sm:text-base">
-                            GIVEN
-                            <strong className="ml-2 text-2xl text-white sm:ml-4 sm:text-3xl">{mySips?.sipsGiven?.toString() ?? 0}</strong>
-                        </span>
-                        <p className="text-2xl font-bold text-blue-500 sm:text-3xl">{players?.find(player => player._id === userId)?.username ?? "Username"}</p>    
-                        <span className="flex-1 text-zinc-400 text-xs sm:text-base">
-                            <strong className="mr-2 text-2xl text-white sm:mr-4 sm:text-3xl">{mySips?.sipsReceived?.toString() ?? 0}</strong>
-                            RECEIVED
-                        </span>
+                        <div className="w-[50vw] flex items-baseline justify-center">
+                            <span className="text-zinc-400 text-xs sm:text-base">
+                                RECEIVED
+                                <strong className="player-stats-strong">{mySips?.sipsReceived?.toString() ?? 0}</strong>
+                            </span>
+                        </div>
+
+                        <div 
+                            className="w-[50vw] flex items-baseline justify-center"
+                            onClick={() => userId && updateCounter({ pin: gamePin, userId: userId })}
+                        >
+                            <strong className="player-stats-strong">{game.base.playerHands?.find(hand => hand.userId === userId)?.counter || 0}</strong>
+
+                            <span className="text-zinc-400 text-xs sm:text-base ml-2 sm:ml-4">CONSUMED</span>
+                        </div>
                     </div>
 
                     <div className="flex flex-row justify-center gap-2.5 overflow-x-auto w-full pt-2.5">
@@ -594,7 +594,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                                             });
                                         }
                                     }}
-                                    className={`card-revealed ${canPlay ? "cursor-pointer border-yellow-400 ring-2 ring-yellow-400 -translate-y-2 shadow-yellow-400/40" : "opacity-85 border-zinc-300"}`}
+                                    className={`card-revealed ${canPlay ? "cursor-pointer border-yellow-400 ring-2 ring-yellow-400 -translate-y-1.5 shadow-yellow-400/40" : "opacity-85 border-zinc-300"}`}
                                 >
                                     <p className={`card-revealed-p ${isRed ? "text-red-600" : "text-black"}`}>
                                         {card}
@@ -610,25 +610,34 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
 
                 {sipDistribution && (
                     <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-                        <div className="main-div max-w-md">
+                        <div className="main-div max-w-md !p-2">
                             <h2 className="text-center py-1">Distribute Sips</h2>
-                            <p className="text-blue-500 text-center font-bold mb-4">
+                            <p className="text-blue-500 text-center font-bold mb-3">
                                 Sips: {Object.values(sipDistribution.assignments).reduce((a, b) => a + b, 0)} / {sipDistribution.total}
                             </p>
                             
-                            <div className="flex flex-col gap-2 max-h-[80vh] overflow-y-auto mb-6">
+                            <div className="flex flex-col gap-2 max-h-[80vh] overflow-y-auto mb-4">
                                 {players?.map(player => (
                                     <div key={player._id} className="player-div !p-2.5">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-[40px] h-[40px] bg-zinc-600 rounded-full flex items-center justify-center flex-shrink-0 sm:w-[50px] sm:h-[50px]">
-                                                <IoPerson className="text-zinc-300 w-[28px] h-[28px] sm:w-[35px] sm:h-[35px]" />
+                                            <div className="profile-pic-div-non-absolute relative">
+                                                {player?.imageUrl ? (
+                                                    <Image 
+                                                        src={player.imageUrl} 
+                                                        alt="Avatar" 
+                                                        fill
+                                                        className="object-cover"
+                                                    />
+                                                ) : (
+                                                    <IoPerson className="profile-pic-icon" />
+                                                )}
                                             </div>
                                             <span className="player-p">
                                                 {player.username}
                                             </span>
                                         </div>
                                         
-                                        <div className="flex items-center gap-4">
+                                        <div className="flex items-center gap-3">
                                             <button 
                                                 onClick={() => {
                                                     const current = sipDistribution.assignments[player._id] || 0;
@@ -639,7 +648,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                                                         });
                                                     }
                                                 }}
-                                                className="!w-[40px] !h-[40px] !rounded-full !bg-blue-700 flex items-center justify-center hover:!bg-blue-600 sm:!w-[50px] sm:!h-[50px]"
+                                                className="!w-[40px] !h-[40px] !rounded-full !bg-blue-700 flex items-center justify-center !shadow-blue-600/20 hover:!bg-blue-600 sm:!w-[50px] sm:!h-[50px]"
                                             >
                                                 <IoRemove size={25} />
                                             </button>
@@ -659,7 +668,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                                                         });
                                                     }
                                                 }}
-                                                className="!w-[40px] !h-[40px] !rounded-full !bg-blue-700 flex items-center justify-center hover:!bg-blue-600 sm:!w-[50px] sm:!h-[50px]"
+                                                className="!w-[40px] !h-[40px] !rounded-full !bg-blue-700 flex items-center justify-center !shadow-blue-600/20 hover:!bg-blue-600 sm:!w-[50px] sm:!h-[50px]"
                                             >
                                                 <IoAdd size={25} />
                                             </button>
@@ -717,8 +726,17 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                         {players ? players.map((player, index) => (
                             <div key={player._id} className="player-div">
                                 <div className="player-name-div">
-                                    <div className="profile-pic-div-non-absolute">
-                                        <IoPerson className="profile-pic-icon" />
+                                    <div className="profile-pic-div-non-absolute relative">
+                                        {player?.imageUrl ? (
+                                            <Image 
+                                                src={player.imageUrl} 
+                                                alt="Avatar" 
+                                                fill
+                                                className="object-cover"
+                                            />
+                                        ) : (
+                                            <IoPerson className="profile-pic-icon" />
+                                        )}
                                     </div>
                                     <p className="player-p">
                                         {player.username || `Player ${index}`}
@@ -742,7 +760,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                                     </div>
                                 ) : (
                                     <div className="flex justify-end">
-                                        <IoClose size={38} className="text-red-600 ml-2 sm:ml-4" />
+                                        <IoClose size={38} className="text-red-700 ml-2 sm:ml-4" />
                                     </div>
                                 )}
                             </div>
@@ -752,11 +770,11 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
 
                 <div className="flex-1 flex flex-col justify-end gap-4 sm:gap-6">
                     <button
-                        className="!bg-blue-700 hover:!bg-blue-600 !shadow-blue-700/20"
+                        className={`${players?.find(player => player._id === userId)?.ready === true ? "!bg-green-600 hover:!bg-green-500 !shadow-green-600/20" : "!bg-red-700 hover:!bg-red-600 !shadow-red-700/20"}`} 
                         disabled={!userId}
                         onClick={() => userId && readyUp({ pin: gamePin, id: userId, isStart: true })}
                     >
-                        Ready Up
+                        {players?.find(player => player._id === userId)?.ready === true ? "Ready" : "Not Ready"}
                     </button>
                     <button
                         className="mb-2 sm:mb-4"

@@ -78,6 +78,7 @@ export const getPlayers = query({
 
 				return {
 					...user,
+					imageUrl: user.image ? await ctx.storage.getUrl(user.image) : null,
 					games: stats?.games ?? 0,
 					lostGames: stats?.lostGames ?? 0,
 					ready: game?.base.ready.includes(id),
@@ -387,6 +388,35 @@ export const distributeSips = mutation({
 			base: {
 				...game.base,
 				sips: newSips,
+			}
+		});
+	},
+});
+
+export const updateCounter = mutation({
+	args: {
+		pin: v.string(),
+		userId: v.id("users"),
+	},
+	handler: async (ctx, args) => {
+		const game = await ctx.db
+			.query("games")
+			.withIndex("by_pin", (query) => query.eq("pin", args.pin))
+			.unique();
+		
+		if (!game || !game.base.playerHands) return;
+
+		const newHands = game.base.playerHands.map((hand) => {
+			if (hand.userId === args.userId) {
+				return { ...hand, counter: (hand.counter || 0) + 1 };
+			}
+			return hand;
+		});
+
+		await ctx.db.patch(game._id, {
+			base: {
+				...game.base,
+				playerHands: newHands,
 			}
 		});
 	},
@@ -719,6 +749,39 @@ export const finalizeDrive = mutation({
 
 		const finishAt = game.drive.finishAt;
 		if (!finishAt || Date.now() < finishAt) return;
+
+		for (const playerId of game.players) {
+			const sipsReceived = game.base.sips?.find((entry) => entry.userId === playerId)?.sipsReceived ?? 0;
+			const sipsGiven = game.base.sips?.find((entry) => entry.userId === playerId)?.sipsGiven ?? 0;
+
+			const isLoser = game.drive.loser === playerId;
+			const lostGames = isLoser ? 1 : 0;
+			const drivingSips = isLoser ? game.drive.sips ?? 0 : 0;
+
+			const stats = await ctx.db
+				.query("stats")
+				.withIndex("by_userId", (query) => query.eq("userId", playerId))
+				.unique();
+
+			if (!stats) {
+				await ctx.db.insert("stats", {
+					userId: playerId,
+					games: 1,
+					lostGames,
+					sipsReceived,
+					sipsGiven,
+					drivingSips,
+				});
+			} else {
+				await ctx.db.patch(stats._id, {
+					games: stats.games + 1,
+					lostGames: stats.lostGames + lostGames,
+					sipsReceived: stats.sipsReceived + sipsReceived,
+					sipsGiven: stats.sipsGiven + sipsGiven,
+					drivingSips: stats.drivingSips + drivingSips,
+				});
+			}
+		}
 
 		await ctx.db.patch(game._id, {
 			status: "finished",

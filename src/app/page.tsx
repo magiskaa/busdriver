@@ -6,6 +6,7 @@ import { useConvexAuth } from "@convex-dev/auth/react";
 import { SubmitEvent, useEffect, useState } from "react";
 import { api } from "../../convex/_generated/api";
 import { IoPerson } from "react-icons/io5";
+import Image from "next/image";
 
 export default function Home() {
 	const router = useRouter();
@@ -16,6 +17,7 @@ export default function Home() {
 	}, [isAuthenticated, isLoading, router]);
 
 	const userId = useQuery(api.users.getUserId);
+    const user = useQuery(api.users.getUser);
 	const ongoingGame = useQuery(api.games.getOngoing, userId ? { userId: userId } : "skip");
 	
 	const createGame = useMutation(api.games.create);
@@ -114,8 +116,18 @@ export default function Home() {
 				</p>
 			</header>
 
-			<div className="profile-pic-div">
-				<IoPerson className="profile-pic-icon" onClick={() => router.push("/profile")} />
+			<div className="profile-pic-div !fixed">
+				{user?.imageUrl ? (
+					<Image
+						src={user?.imageUrl || ""} 
+						alt="Avatar" 
+						fill
+						className="object-cover"
+						onClick={() => router.push("/profile")}
+					/>
+				) : (
+					<IoPerson className="profile-pic-icon" onClick={() => router.push("/profile")} />
+				)}
 			</div>
 				
 			{errorMessage && <p className="error-p">{errorMessage ?? "Error occurred. Please try again."}</p>}
