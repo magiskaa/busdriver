@@ -11,7 +11,8 @@
   "dependencies": {
     "@convex-dev/auth": "^0.0.93",
     "convex": "^1.40.0",
-    "next": "16.2.7",
+    "next": "^16.2.10",
+    "nextjs-toast-notify": "^1.62.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-icons": "^5.6.0"

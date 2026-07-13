@@ -7,6 +7,7 @@ import { Id } from "../../../../convex/_generated/dataModel";
 import { IoPerson, IoArrowBack, IoCheckmark, IoClose, IoAdd, IoRemove, IoBus, IoCog, IoTrash } from "react-icons/io5";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { showToast } from "nextjs-toast-notify";
 
 export default function GamePage({ params }: { params: Promise<{ pin: string }>; }) {
     const router = useRouter();
@@ -165,6 +166,19 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
             });
         }
     }, [game, gamePin, nowTs, finalizeDrive, userId, players]);
+
+    useEffect(() => {
+        if (game?.status === "active" && mySips?.sipsReceived && mySips?.sipsReceived !== 0) {
+            showToast.success("You got more sips!", {
+                duration: 5000,
+                position: "top-center",
+                transition: "bounceIn",
+                icon: "🍺",
+                sound: true,
+                progress: true
+            });
+        }
+    }, [game?.status, mySips?.sipsReceived]);
 
 
     if (game === null) {
@@ -807,7 +821,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                                 Card Count
                             </p>
 
-                            <div className="settings-div">
+                            <div className="settings-div sm:!right-4 sm:!top-4">
                                 <IoTrash 
                                     className="trash-can-icon" 
                                     onClick={() => {
