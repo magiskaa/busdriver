@@ -57,7 +57,7 @@ export default function Home() {
 			setErrorMessage("Enter a PIN code before joining.");
 			return;
 		}
-		if (trimmedPin.length != 6) {
+		if (trimmedPin.length != 4) {
 			setErrorMessage("Enter a PIN code that is 6 characters long.");
 			return;
 		}

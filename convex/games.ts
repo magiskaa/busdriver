@@ -4,7 +4,7 @@ import { mutation, query } from "./_generated/server";
 function generatePin() {
 	const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ23456789";
 	let pin = "";
-	for (let i = 0; i < 6; i += 1) {
+	for (let i = 0; i < 4; i += 1) {
 		pin += chars[Math.floor(Math.random() * chars.length)];
 	}
 	return pin;

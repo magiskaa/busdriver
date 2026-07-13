@@ -169,7 +169,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
 
     useEffect(() => {
         if (game?.status === "active" && mySips?.sipsReceived && mySips?.sipsReceived !== 0) {
-            showToast.success("You got more sips!", {
+            showToast.success("Drink up, you got some sips!", {
                 duration: 5000,
                 position: "top-center",
                 transition: "bounceIn",
@@ -748,6 +748,11 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                     <div className="flex flex-row items-center justify-between">
                         <h2>Joined Players</h2>
                         <h2>{players?.length} / 6</h2>
+                        <div className="flex flex-row items-center justify-center -space-x-0.5 w-[60px]">
+                            {Array.from({ length: cardCount || 5 }).map((_, idx) => (
+                                <div key={idx} className="bg-blue-800 rounded-sm w-[12px] h-[19px] border border-white/30 shadow-sm shadow-black/50 sm:w-[15px] sm:h-[24px]"></div>
+                            ))}
+                        </div>
                     </div>
 
                     <div className="players-list-div">
@@ -815,13 +820,13 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
 
                 {isSettings && (
                     <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-                        <div className="main-div max-w-md !p-2 relative">
+                        <div className="main-div max-w-md !p-2 relative sm:!p-3">
                             <h2 className="text-center py-1">Game Settings</h2>
                             <p className="text-blue-500 text-center font-bold mb-3">
                                 Card Count
                             </p>
 
-                            <div className="settings-div sm:!right-4 sm:!top-4">
+                            <div className="settings-div sm:!right-3 sm:!top-3">
                                 <IoTrash 
                                     className="trash-can-icon" 
                                     onClick={() => {
@@ -831,7 +836,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                                 />
                             </div>
                             
-                            <div className="flex flex-row items-center justify-center gap-5 mt-4 mb-8">
+                            <div className="flex flex-row items-center justify-center gap-5 mt-6 mb-8">
                                 <div className={`card-count-div ${cardCount === 1 ? "active-card-count" : ""}`} onClick={() => updateCardCount({ pin: gamePin, cardCount: 1 })}>
                                     <strong>1</strong>
                                 </div>

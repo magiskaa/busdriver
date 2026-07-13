@@ -70,7 +70,7 @@ h1 {
 }
 
 
-/* ---------------------- MAIN ---------------------- */
+/* ---------------------- MAIN & HOME SCREEN ---------------------- */
 main {
 	@apply 
 	mx-auto h-dvh max-h-dvh w-full max-w-3xl overflow-hidden flex flex-col gap-4 p-3 
@@ -93,36 +93,6 @@ h2 {
 	@apply 
 	text-zinc-400 text-sm pt-1 mt-1 border-t border-zinc-700 leading-snug 
 	sm:text-base sm:pt-3 sm:mt-3
-}
-
-
-/* ---------------------- BACK ARROW, SETTINGS & TRASH CAN ---------------------- */
-.back-arrow-div {
-	@apply 
-	absolute left-3 top-3 w-[40px] h-[40px] flex items-center justify-center
-	sm:right-8 sm:top-8 sm:w-[50px] sm:h-[50px]
-}
-
-.back-arrow-icon {
-	@apply 
-	text-zinc-100 w-[40px] h-[40px]
-	hover:text-zinc-400  
-	active:scale-[0.9]
-	sm:w-[50px] sm:h-[50px]
-}
-
-.settings-div {
-	@apply 
-	absolute right-3 top-3 w-[40px] h-[40px] flex items-center justify-center
-	sm:right-8 sm:top-8 sm:w-[50px] sm:h-[50px]
-}
-
-.trash-can-icon {
-	@apply
-	text-red-700 !w-[34px] !h-[34px]
-	hover:text-red-600 
-	active:scale-[0.9]  
-	sm:!w-[40px] sm:!h-[40px]
 }
 
 
@@ -208,7 +178,7 @@ h2 {
 
 .active-card-count {
 	@apply
-	!bg-green-600 scale-[1.2]
+	!bg-blue-700 !shadow-blue-600/20 scale-[1.2]
 }
 
 
@@ -310,3 +280,34 @@ h2 {
 	text-2xl font-bold
 	sm:text-4xl
 }
+
+
+/* ---------------------- BACK ARROW, SETTINGS & TRASH CAN ---------------------- */
+.back-arrow-div {
+	@apply 
+	absolute left-3 top-3 w-[40px] h-[40px] flex items-center justify-center
+	sm:right-8 sm:top-8 sm:w-[50px] sm:h-[50px]
+}
+
+.back-arrow-icon {
+	@apply 
+	text-zinc-100 w-[40px] h-[40px]
+	hover:text-zinc-400  
+	active:scale-[0.9]
+	sm:w-[50px] sm:h-[50px]
+}
+
+.settings-div {
+	@apply 
+	absolute right-3 top-3 w-[40px] h-[40px] flex items-center justify-center
+	sm:right-8 sm:top-8 sm:w-[50px] sm:h-[50px]
+}
+
+.trash-can-icon {
+	@apply
+	text-red-700 !w-[28px] !h-[28px]
+	hover:text-red-600 
+	active:scale-[0.9]  
+	sm:!w-[34px] sm:!h-[34px]
+}
+
