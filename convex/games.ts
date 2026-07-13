@@ -136,6 +136,7 @@ export const create = mutation({
 			players: [args.userId],
 			base: {
 				ready: [],
+				cardCount: 5,
 			},
 			drive: {
 				ready: [],
@@ -194,6 +195,7 @@ export const ready = mutation({
 			const includes = list.includes(args.id);
 			await ctx.db.patch(game._id, {
 				base: {
+					...game.base,
 					ready: includes ? list.filter((id) => id !== args.id) : [...list, args.id],
 				},
 			});
@@ -211,7 +213,7 @@ export const start = mutation({
 			.withIndex("by_pin", (query) => query.eq("pin", args.pin))
 			.unique();
 
-		if (!game) { throw new Error("Game not found."); }
+		if (!game || !game.base.cardCount) { throw new Error("Game not found."); }
 
 		const shuffled = getShuffledDeck();
 
@@ -220,9 +222,9 @@ export const start = mutation({
 		for (const userId of game.players) {
 			playerHands.push({
 				userId,
-				cards: shuffled.slice(deckIdx, deckIdx + 5),
+				cards: shuffled.slice(deckIdx, deckIdx + (game.base.cardCount || 5)),
 			});
-			deckIdx += 5;
+			deckIdx += game.base.cardCount || 5;
 		}
 
 		const board = shuffled.slice(deckIdx, deckIdx + 15);
@@ -238,6 +240,44 @@ export const start = mutation({
 				revealed: [],
 				playerHands,
 				sips: [],
+			},
+		});
+	},
+});
+
+export const discard = mutation({
+	args: {
+		pin: v.string(),
+	},
+	handler: async (ctx, args) => {
+		const game = await ctx.db
+			.query("games")
+			.withIndex("by_pin", (query) => query.eq("pin", args.pin))
+			.unique();
+
+		if (!game) { throw new Error("Game not found."); }
+
+		await ctx.db.delete("games", game._id);
+	},
+});
+
+export const updateCardCount = mutation({
+	args: {
+		pin: v.string(),
+		cardCount: v.number(),
+	},
+	handler: async (ctx, args) => {
+		const game = await ctx.db
+			.query("games")
+			.withIndex("by_pin", (query) => query.eq("pin", args.pin))
+			.unique();
+
+		if (!game) { throw new Error("Game not found."); }
+
+		await ctx.db.patch(game._id, {
+			base: {
+				...game.base,
+				cardCount: args.cardCount,
 			},
 		});
 	},

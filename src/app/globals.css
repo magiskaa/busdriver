@@ -96,7 +96,7 @@ h2 {
 }
 
 
-/* ---------------------- BACK ARROW ---------------------- */
+/* ---------------------- BACK ARROW, SETTINGS & TRASH CAN ---------------------- */
 .back-arrow-div {
 	@apply 
 	absolute left-3 top-3 w-[40px] h-[40px] flex items-center justify-center
@@ -109,6 +109,20 @@ h2 {
 	hover:text-zinc-400  
 	active:scale-[0.9]
 	sm:w-[50px] sm:h-[50px]
+}
+
+.settings-div {
+	@apply 
+	absolute right-3 top-3 w-[40px] h-[40px] flex items-center justify-center
+	sm:right-8 sm:top-8 sm:w-[50px] sm:h-[50px]
+}
+
+.trash-can-icon {
+	@apply
+	text-red-700 !w-[34px] !h-[34px]
+	hover:text-red-600 
+	active:scale-[0.9]  
+	sm:!w-[40px] sm:!h-[40px]
 }
 
 
@@ -182,6 +196,19 @@ h2 {
 .bottom-button-div {
 	@apply
 	flex-1 flex flex-col justify-end sm:mb-2
+}
+
+/* SETTINGS POP UP */
+.card-count-div {
+	@apply	
+	bg-zinc-700/50 rounded-lg border border-zinc-700 p-1.5 text-center w-[40px] 
+	hover:cursor-pointer
+	sm:w-[48px]
+}
+
+.active-card-count {
+	@apply
+	!bg-green-600 scale-[1.2]
 }
 
 

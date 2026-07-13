@@ -4,7 +4,7 @@ import { use, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
-import { IoPerson, IoArrowBack, IoCheckmark, IoClose, IoAdd, IoRemove, IoBus } from "react-icons/io5";
+import { IoPerson, IoArrowBack, IoCheckmark, IoClose, IoAdd, IoRemove, IoBus, IoCog, IoTrash } from "react-icons/io5";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
@@ -20,6 +20,8 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
     
     const readyUp = useMutation(api.games.ready);
     const startGame = useMutation(api.games.start);
+    const discardGame = useMutation(api.games.discard);
+    const updateCardCount = useMutation(api.games.updateCardCount);
     const revealCard = useMutation(api.games.revealCard);
     const playCard = useMutation(api.games.playCard);
     const distributeSips = useMutation(api.games.distributeSips);
@@ -33,6 +35,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
     const resolveDriveRound = useMutation(api.games.resolveDriveRound);
     const finalizeDrive = useMutation(api.games.finalizeDrive);
     
+    const [isSettings, setIsSettings] = useState<boolean>(false);
     const [sipDistribution, setSipDistribution] = useState<{
         total: number;
         assignments: Record<string, number>;
@@ -48,6 +51,8 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
         return 1;
     };
 
+    const isHost = game?.host === user?._id;
+    const cardCount = game?.base.cardCount;
     const playersReadyStart = game && game.players && game.base.ready ? game.players.every(player => game.base.ready.includes(player)) : false;
     const myHand = game?.base.playerHands?.find(h => h.userId === userId)?.cards;
     const board = game?.base.board;
@@ -164,14 +169,9 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
 
     if (game === null) {
         return (
-            <main className="flex min-h-screen w-full flex-col items-center justify-center p-8">
-                <h1 className="text-2xl font-bold">Game not found</h1>
-                <button 
-                    className="mt-4 text-blue-600 hover:underline"
-                    onClick={() => router.replace("/")}
-                >
-                    Return home
-                </button>
+            <main className="loading-main">
+                <h1 className="loading-h1 mb-2">Game not found</h1>
+                <button onClick={() => router.replace("/")}>Return home</button>
             </main>
         );
     }
@@ -532,6 +532,14 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                             <span>{game?.drive?.ready?.length ?? 0} / {game.players.length}</span>
                         </button>
                     )}
+                    {isHost &&
+                        <div className="back-arrow-div !top-6">
+                            <IoTrash className="trash-can-icon" onClick={() => {
+                                discardGame({ pin: gamePin });
+                                router.replace("/");
+                            }} />
+                        </div>
+                    }
                     <div className="pyramid-row-div">
                         {[0].map(renderBoardCard)}
                     </div>
@@ -716,6 +724,12 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                     <IoArrowBack className="back-arrow-icon" onClick={() => router.push("/")} />
                 </div>
 
+                {isHost &&
+                    <div className="settings-div">
+                        <IoCog className="back-arrow-icon" onClick={() => setIsSettings(true)} />
+                    </div>
+                }
+
                 <div className="main-div">
                     <div className="flex flex-row items-center justify-between">
                         <h2>Joined Players</h2>
@@ -784,6 +798,53 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                         {playersReadyStart ? "Start" : `Players ready ${game?.base.ready.length} / ${players?.length}`}
                     </button>
                 </div>
+
+                {isSettings && (
+                    <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+                        <div className="main-div max-w-md !p-2 relative">
+                            <h2 className="text-center py-1">Game Settings</h2>
+                            <p className="text-blue-500 text-center font-bold mb-3">
+                                Card Count
+                            </p>
+
+                            <div className="settings-div">
+                                <IoTrash 
+                                    className="trash-can-icon" 
+                                    onClick={() => {
+                                        discardGame({ pin: gamePin });
+                                        router.replace("/");
+                                    }}
+                                />
+                            </div>
+                            
+                            <div className="flex flex-row items-center justify-center gap-5 mt-4 mb-8">
+                                <div className={`card-count-div ${cardCount === 1 ? "active-card-count" : ""}`} onClick={() => updateCardCount({ pin: gamePin, cardCount: 1 })}>
+                                    <strong>1</strong>
+                                </div>
+                                <div className={`card-count-div ${cardCount === 2 ? "active-card-count" : ""}`} onClick={() => updateCardCount({ pin: gamePin, cardCount: 2 })}>
+                                    <strong>2</strong>
+                                </div>
+                                <div className={`card-count-div ${cardCount === 3 ? "active-card-count" : ""}`} onClick={() => updateCardCount({ pin: gamePin, cardCount: 3 })}>
+                                    <strong>3</strong>
+                                </div>
+                                <div className={`card-count-div ${cardCount === 4 ? "active-card-count" : ""}`} onClick={() => updateCardCount({ pin: gamePin, cardCount: 4 })}>
+                                    <strong>4</strong>
+                                </div>
+                                <div className={`card-count-div ${cardCount === 5 ? "active-card-count" : ""}`} onClick={() => updateCardCount({ pin: gamePin, cardCount: 5 })}>
+                                    <strong>5</strong>
+                                </div>
+                            </div>
+
+                            <button 
+                                onClick={async () => {
+                                    setIsSettings(false);
+                                }}
+                            >
+                                Done
+                            </button>
+                        </div>
+                    </div>
+                )}
             </main>
         );
     }

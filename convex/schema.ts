@@ -24,6 +24,7 @@ export default defineSchema({
         players: v.array(v.id("users")),
         base: v.object({
             ready: v.array(v.id("users")),
+            cardCount: v.optional(v.number()),
             deck: v.optional(v.array(v.string())),
             board: v.optional(v.array(v.string())),
             revealed: v.optional(v.array(v.number())),
