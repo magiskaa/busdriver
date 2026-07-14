@@ -4,7 +4,7 @@ import { use, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
-import { IoPerson, IoArrowBack, IoCheckmark, IoClose, IoAdd, IoRemove, IoBus, IoCog, IoTrash } from "react-icons/io5";
+import { IoPerson, IoArrowBack, IoCheckmark, IoClose, IoAdd, IoRemove, IoBus, IoCog, IoTrash, IoExitOutline } from "react-icons/io5";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { showToast } from "nextjs-toast-notify";
@@ -18,10 +18,13 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
     const user = useQuery(api.users.getUser);
     const game = useQuery(api.games.getGame, gamePin ? { pin: gamePin } : "skip");
     const players = useQuery(api.games.getPlayers, game?.players ? { pin: gamePin, ids: game.players } : "skip");
+    const ongoingGame = useQuery(api.games.getOngoing, userId ? { userId: userId } : "skip");
     
+    const leaveGame = useMutation(api.games.leave);
     const readyUp = useMutation(api.games.ready);
     const startGame = useMutation(api.games.start);
     const discardGame = useMutation(api.games.discard);
+    const rematch = useMutation(api.games.rematch);
     const updateCardCount = useMutation(api.games.updateCardCount);
     const revealCard = useMutation(api.games.revealCard);
     const playCard = useMutation(api.games.playCard);
@@ -64,6 +67,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
     const isBaseGameDone = board && revealedCards.length === board.length;
     const playersReadyDrive = game && game.players && game.drive.ready ? game.players.every(player => game.drive.ready.includes(player)) : false;
     const tieBreakersRevealed = game && game.tie?.tiedPlayers.every(player => player.revealed === true);
+
 
     useEffect(() => {
         const intervalId = setInterval(() => setNowTs(Date.now()), 500);
@@ -180,6 +184,28 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
         }
     }, [game?.status, mySips?.sipsReceived]);
 
+    useEffect(() => {
+        if (game?.status === "finished" && !isHost && ongoingGame) {
+            if (ongoingGame) {
+                router.push(`/game/${ongoingGame}`);
+            }
+        }
+    }, [game?.status, isHost, ongoingGame, router]);
+
+
+    const handleRematch = async () => {
+		if (!userId || !players) {
+			return;
+		}
+
+		try {
+            const res =  await rematch({ host: userId, players: players.map(p => p._id) });
+			router.push(`/game/${res.pin}`);
+		} catch {
+            throw new Error("Rematch failed. Try again.")
+		}
+	}
+
 
     if (game === null) {
         return (
@@ -251,6 +277,15 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                 </div>
 
                 <div className="bottom-button-div">
+                    {isHost &&
+                        <button
+                            className="!bg-orange-600 !shadow-orange-500/20 hover:!bg-orange-500"
+                            onClick={handleRematch}
+                        >
+                            Play Again
+                        </button>
+                    }
+
                     <button
                         onClick={() => router.replace("/")}
                     >
@@ -632,7 +667,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
 
                 {sipDistribution && (
                     <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-                        <div className="main-div max-w-md !p-2">
+                        <div className="main-div max-w-md !p-2 sm:!p-3">
                             <h2 className="text-center py-1">Distribute Sips</h2>
                             <p className="text-blue-500 text-center font-bold mb-3">
                                 Sips: {Object.values(sipDistribution.assignments).reduce((a, b) => a + b, 0)} / {sipDistribution.total}
@@ -738,11 +773,20 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                     <IoArrowBack className="back-arrow-icon" onClick={() => router.push("/")} />
                 </div>
 
-                {isHost &&
+                {isHost ? (
                     <div className="settings-div">
                         <IoCog className="back-arrow-icon" onClick={() => setIsSettings(true)} />
                     </div>
-                }
+                ) : (
+                    <div className="settings-div">
+                        <IoExitOutline className="back-arrow-icon" onClick={() => {
+                            if (userId) {
+                                leaveGame({ pin: gamePin, player: userId });
+                                router.replace("/");
+                            }
+                        }} />
+                    </div>
+                )}
 
                 <div className="main-div">
                     <div className="flex flex-row items-center justify-between">
@@ -801,7 +845,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                     </div>
                 </div>
 
-                <div className="flex-1 flex flex-col justify-end gap-4 sm:gap-6">
+                <div className="bottom-button-div">
                     <button
                         className={`${players?.find(player => player._id === userId)?.ready === true ? "!bg-green-600 hover:!bg-green-500 !shadow-green-600/20" : "!bg-red-700 hover:!bg-red-600 !shadow-red-700/20"}`} 
                         disabled={!userId}
@@ -809,8 +853,9 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                     >
                         {players?.find(player => player._id === userId)?.ready === true ? "Ready" : "Not Ready"}
                     </button>
+
                     <button
-                        className="mb-2 sm:mb-4"
+                        className={playersReadyStart ? "!bg-orange-600 !shadow-orange-500/20 hover:!bg-orange-500" : ""}
                         disabled={!playersReadyStart}
                         onClick={() => startGame({ pin: gamePin })}
                     >

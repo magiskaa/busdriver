@@ -168,6 +168,32 @@ export const join = mutation({
 	},
 });
 
+export const leave = mutation({
+	args: {
+		pin: v.string(),
+		player: v.id("users"),
+	},
+	handler: async (ctx, args) => {
+		const game = await ctx.db
+			.query("games")
+			.withIndex("by_pin", (query) => query.eq("pin", args.pin))
+			.unique();
+
+		if (!game) { throw new Error("Game not found."); }
+
+		const newPlayers = game.players.filter((id) => id !== args.player);
+		const newReady = game.base.ready.filter((id) => id !== args.player);
+
+		await ctx.db.patch(game._id, {
+			players: newPlayers,
+			base: {
+				...game.base,
+				ready: newReady,
+			},
+		});
+	},
+});
+
 export const ready = mutation({
 	args: {
 		pin: v.string(),
@@ -258,6 +284,41 @@ export const discard = mutation({
 		if (!game) { throw new Error("Game not found."); }
 
 		await ctx.db.delete("games", game._id);
+	},
+});
+
+export const rematch = mutation({
+	args: {
+		host: v.id("users"),
+		players: v.array(v.id("users")),
+	},
+	handler: async (ctx, args) => {
+		let pin = generatePin();
+
+		while (
+			await ctx.db
+				.query("games")
+				.withIndex("by_pin", (query) => query.eq("pin", pin))
+				.unique()
+		) {
+			pin = generatePin();
+		}
+
+		await ctx.db.insert("games", {
+			pin: pin,
+			status: "waiting",
+			host: args.host,
+			players: args.players,
+			base: {
+				ready: [],
+				cardCount: 5,
+			},
+			drive: {
+				ready: [],
+			},
+		});
+
+		return { pin };
 	},
 });
 
