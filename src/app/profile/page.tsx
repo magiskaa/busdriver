@@ -19,7 +19,8 @@ export default function ProfilePage() {
     
     const userId = useQuery(api.users.getUserId);
     const user = useQuery(api.users.getUser);
-    const stats = useQuery(api.stats.get, userId ? { userId: userId } : "skip");
+    const stats = useQuery(api.stats.getStats, userId ? { userId: userId } : "skip");
+    const games = useQuery(api.stats.getGames, userId ? { userId: userId } : "skip");
 
     const updateUser = useMutation(api.users.update);
     const generateUploadUrl = useMutation(api.users.generateUploadUrl);
@@ -124,7 +125,7 @@ export default function ProfilePage() {
                     </div>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-y-4 border-t border-zinc-700 pt-4 sm:pt-8">
+                <div className="grid grid-cols-2 gap-y-4 border-t border-zinc-700 pt-2.5 sm:pt-8">
                     <p className="profile-stats-p">
                         GAMES: <strong className="profile-stats-strong">{stats?.games?.toString() || 0}</strong>
                     </p>
@@ -143,6 +144,39 @@ export default function ProfilePage() {
                     <p className="profile-stats-p">
                         DRIVING SIPS: <strong className="profile-stats-strong">{stats?.drivingSips?.toString() || 0}</strong>
                     </p>
+                </div>
+            </div>
+
+            <div className="main-div">
+                <h2>Played Games</h2>
+
+                <div className="flex flex-col items-center justify-start h-[145px] overflow-y-auto border-t border-zinc-700 pt-0.5 mt-2.5 sm:h-[220px]">
+                    {games ? (games.map((game, idx) => (
+                        <div key={idx} className="flex flex-row items-center justify-between gap-2 p-2 w-full border-b border-zinc-800">
+                            <p className="text-zinc-400 font-medium text-lg sm:text-xl">
+                                {new Date(game._creationTime).toLocaleDateString()} <br /> 
+                                {new Date(game._creationTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+
+                            <div>
+                                {game.drive.loser === userId ? (<strong className="text-red-700">LOST</strong>) : ""}
+                                {game.drive.loser === userId ? (<strong className="ml-2">({game.drive.sips})</strong>) : ""}
+                            </div>
+
+                            <div className="flex flex-row items-center justify-center gap-4 sm:gap-12">
+                                <div className="flex items-baseline justify-end w-[40px]">
+                                    <span className="text-xl font-bold mr-2 sm:text-3xl">{game.base.sips?.find(entry => entry.userId === userId)?.sipsGiven ?? 0}</span>
+                                    <span className="text-xs font-medium text-zinc-400 uppercase sm:text-base">G</span>
+                                </div>
+                                <div className="flex items-baseline justify-end w-[40px]">
+                                    <span className="text-xl font-bold mr-2 sm:text-3xl">{game.base.sips?.find(entry => entry.userId === userId)?.sipsReceived ?? 0}</span>
+                                    <span className="text-xs font-medium text-zinc-400 uppercase sm:text-base">R</span>
+                                </div>
+                            </div>
+                        </div>
+                    ))) : (
+                        <p className="italic-text p-2">No games played.</p>
+                    )}
                 </div>
             </div>
 

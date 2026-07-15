@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
-export const get = query({
+export const getStats = query({
     args: {
         userId: v.id("users")
     },
@@ -47,5 +47,20 @@ export const update = mutation({
             sipsGiven: stats.sipsGiven + args.sipsGiven,
             drivingSips: stats.drivingSips + args.drivingSips,
         });
+    },
+});
+
+export const getGames = query({
+    args: {
+        userId: v.id("users")
+    },
+    handler: async (ctx, args) => {
+        const games = await ctx.db
+            .query("games")
+            .collect();
+
+        return games
+            .filter((g) => g.status === "finished" && g.players.includes(args.userId))
+            .sort((a, b) => b._creationTime - a._creationTime);
     },
 });

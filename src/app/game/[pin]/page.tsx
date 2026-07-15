@@ -262,11 +262,11 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                                 </div>
                                 
                                 <div className="flex flex-row items-center justify-center gap-4 sm:gap-8">
-                                    <div className="flex items-baseline justify-between">
+                                    <div className="flex items-baseline justify-end w-[40px]">
                                         <span className="text-xl font-bold mr-2 sm:text-3xl">{game.base.sips?.find(entry => entry.userId === player._id)?.sipsGiven ?? 0}</span>
                                         <span className="text-xs font-medium text-zinc-400 uppercase sm:text-base">G</span>
                                     </div>
-                                    <div className="flex items-baseline justify-between">
+                                    <div className="flex items-baseline justify-end w-[40px]">
                                         <span className="text-xl font-bold mr-2 sm:text-3xl">{game.base.sips?.find(entry => entry.userId === player._id)?.sipsReceived ?? 0}</span>
                                         <span className="text-xs font-medium text-zinc-400 uppercase sm:text-base">R</span>
                                     </div>
@@ -660,7 +660,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                             );
                         })}
                         {myHand?.length === 0 && (
-                            <p className="text-zinc-500 italic mt-4">Well played! Remember, you can still get more sips.</p>
+                            <p className="italic-text mt-4">Well played! Remember, you can still get more sips.</p>
                         )}
                     </div>
                 </div>

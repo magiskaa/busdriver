@@ -16,6 +16,7 @@ body {
 	background: var(--background);
 	color: var(--foreground);
 	font-family: Arial, Helvetica, sans-serif;
+	overflow: hidden;
 }
 
 button {
@@ -93,6 +94,11 @@ h2 {
 	@apply 
 	text-zinc-400 text-sm pt-1 mt-1 border-t border-zinc-700 leading-snug 
 	sm:text-base sm:pt-3 sm:mt-3
+}
+
+.italic-text {
+	@apply
+	text-zinc-500 italic
 }
 
 
