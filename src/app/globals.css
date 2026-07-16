@@ -101,25 +101,31 @@ h2 {
 	text-zinc-500 italic
 }
 
+.bug-icon {
+	@apply
+	text-zinc-400 w-[32px] h-[32px]
+	sm:w-[38px] sm:h-[38px]
+}
+
 
 /* ---------------------- PROFILE SCREEN ---------------------- */
 /* PROFILE PIC */
 .profile-pic-div {
 	@apply 
 	absolute right-3 top-3 w-[40px] h-[40px] bg-zinc-600 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden
-	sm:right-8 sm:top-8 sm:w-[50px] sm:h-[50px]
+	sm:right-8 sm:top-8 sm:w-[48px] sm:h-[48px]
 }
 
 .profile-pic-div-non-absolute {
 	@apply
 	w-[40px] h-[40px] bg-zinc-600 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden
-	sm:w-[50px] sm:h-[50px]
+	sm:w-[48px] sm:h-[48px]
 }
 
 .profile-pic-icon {
 	@apply 
 	text-zinc-300 w-[28px] h-[28px] 
-	sm:w-[35px] sm:h-[35px]
+	sm:w-[34px] sm:h-[34px]
 }
 
 /* PROFILE STATS */
@@ -300,7 +306,7 @@ h2 {
 	text-zinc-100 w-[40px] h-[40px]
 	hover:text-zinc-400  
 	active:scale-[0.9]
-	sm:w-[50px] sm:h-[50px]
+	sm:w-[48px] sm:h-[48px]
 }
 
 .settings-div {

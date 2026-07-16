@@ -3,14 +3,12 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
 export const getUserId = query({
-    args: {},
     handler: async (ctx) => {
         return await getAuthUserId(ctx);
     },
 });
 
 export const getUser = query({
-    args: {},
     handler: async (ctx) => {
         const userId = await getAuthUserId(ctx);
         if (userId === null) { return null; }
@@ -22,6 +20,24 @@ export const getUser = query({
         };
     },
 });
+
+export const getUsers = query({
+    handler: async (ctx) => {
+        const users = await ctx.db
+            .query("users")
+            .collect();
+        
+        return Promise.all(
+            users.map(async (user) => {
+                return {
+                    ...user,
+                    imageUrl: user.image ? await ctx.storage.getUrl(user.image) : null,
+                };
+            })
+        );
+    },
+});
+
 
 export const update = mutation({
     args: {

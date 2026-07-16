@@ -5,8 +5,9 @@ import { useMutation, useQuery } from "convex/react";
 import { useConvexAuth } from "@convex-dev/auth/react";
 import { SubmitEvent, useEffect, useState } from "react";
 import { api } from "../../convex/_generated/api";
-import { IoPerson } from "react-icons/io5";
+import { IoPerson, IoBug, IoArrowBack } from "react-icons/io5";
 import Image from "next/image";
+import { showToast } from "nextjs-toast-notify";
 
 export default function Home() {
 	const router = useRouter();
@@ -22,11 +23,14 @@ export default function Home() {
 	
 	const createGame = useMutation(api.games.create);
 	const joinGame = useMutation(api.games.join);
+	const addReport = useMutation(api.reports.add);
 
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 	
 	const [pin, setPin] = useState<string>("");
 	const [isJoining, setIsJoining] = useState<boolean>(false);
+	const [isBugReport, setIsBugReport] = useState<boolean>(false);
+	const [text, setText] = useState<string>("");
 
 	if (isLoading) {
 		return (
@@ -107,6 +111,32 @@ export default function Home() {
 		}
 	};
 
+    const handleSend = async () => {
+		if (!userId) {
+			setErrorMessage("Sending bug report failed. Sign out and log in again.");
+			return;
+		}
+		if (!text || text.length < 3) {
+			return;
+		}
+
+		try {
+			await addReport({ userId: userId, text });
+		} catch {
+			setErrorMessage("Sending bug report failed. Try again.");
+		} finally {
+			showToast.success("Bug report sent successfully!", {
+				duration: 3000,
+				position: "top-center",
+				transition: "bounceIn",
+				icon: "🪲",
+				sound: true,
+				progress: true
+			});
+		}
+		setIsBugReport(false);
+    };
+
 	return (
 		<main>
 			<header>
@@ -116,7 +146,7 @@ export default function Home() {
 				</p>
 			</header>
 
-			<div className="profile-pic-div !fixed">
+			<div className="profile-pic-div !fixed active:scale-[1.1]">
 				{user?.imageUrl ? (
 					<Image
 						src={user?.imageUrl || ""} 
@@ -183,6 +213,39 @@ export default function Home() {
 					{ongoingGame ? "Join" : "No ongoing game"}
 				</button>
 			</div>
+
+			<div 
+				className="main-div flex flex-row items-center gap-2 !bg-zinc-800/90 text-xs !border-zinc-700 !py-1 !rounded-full !w-fit absolute right-3 bottom-3 active:scale-[1.05]"
+				onClick={() => setIsBugReport(true)}
+			>
+				<IoBug className="bug-icon" />
+				<p className="text-zinc-400">Report a bug, or <br /> make a suggestion.</p>
+			</div>
+
+			{isBugReport && (
+				<div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+					<div className="main-div max-w-md !p-2 relative">
+						<h2 className="text-center pt-2 mb-4">Bug Report</h2>
+
+						<div className="back-arrow-div !m-0 !absolute top-4 left-4">
+							<IoArrowBack className="back-arrow-icon" onClick={() => setIsBugReport(false)} />
+						</div>
+						
+						<textarea 
+							name="report" 
+							id="reportText" 
+							className="bg-zinc-100 text-black px-2.5 py-1.5 mt-1.5 mb-3 rounded-xl border border-zinc-200 outline-none transition-all w-full focus:ring-2 focus:ring-green-600 sm:px-4 sm:py-3"
+							onChange={(event) => setText(event.target.value)}
+						/>
+
+						<button
+							onClick={handleSend}
+						>
+							Send
+						</button>
+					</div>
+				</div>
+			)}
 		</main>
 	);
 }

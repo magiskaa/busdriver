@@ -17,6 +17,10 @@ export default defineSchema({
         sipsGiven: v.number(),
         drivingSips: v.number(),
     }).index("by_userId", ["userId"]),
+    reports: defineTable({
+        userId: v.id("users"),
+        text: v.string(),
+    }).index("by_userId", ["userId"]),
     games: defineTable({
         pin: v.string(),
         status: v.union(v.literal("waiting"), v.literal("active"), v.literal("tied"), v.literal("driving"), v.literal("finished")),
