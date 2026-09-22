@@ -206,19 +206,19 @@ h2 {
 /* TOP PLAYERS HANDS */
 .players-hands-div {
 	@apply
-	flex flex-row gap-2.5 overflow-x-auto w-full justify-center pt-4
+	flex flex-row gap-2.5 overflow-x-auto w-full justify-center pt-5
 	sm:gap-4 sm:pt-6 sm:pb-2
 }
 
 .players-hand-div {
 	@apply
-	relative bg-zinc-800 flex flex-col items-center justify-center gap-2 p-1 rounded-lg border border-zinc-700 w-[70px]
-	sm:w-[105px] sm:gap-3 sm:p-2
+	relative bg-zinc-800 flex flex-col items-center justify-center gap-2 p-1 rounded-lg border border-zinc-700 w-[60px] h-[80px]
+	sm:w-[90px] sm:h-[110px] sm:gap-3 sm:p-2
 }
 
 .sipcounter {
 	@apply
-	absolute -top-3 -right-2 bg-red-600 text-white font-black px-1 py-0.5 text-sm rounded-full shadow-xl
+	absolute -top-3.5 -right-2 bg-red-600 text-white font-black px-1.25 py-0.5 text-sm rounded-full shadow-xl
 	sm:-top-4 sm:-right-3 sm:px-2 sm:text-base
 }
 
@@ -329,5 +329,32 @@ h2 {
 	hover:text-red-600 
 	active:scale-[0.9]  
 	sm:!w-[34px] sm:!h-[34px]
+}
+
+
+/* ---------------------- ANIMATIONS ---------------------- */
+@keyframes emote-pop {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, 10px) scale(0.4);
+    }
+
+    35% {
+        opacity: 1;
+        transform: translate(-50%, 0) scale(1.2);
+    }
+
+    70% {
+        transform: translate(-50%, -4px) scale(1);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -30px) scale(0.9);
+    }
+}
+
+.animate-emote-pop {
+    animation: emote-pop 10s ease-out forwards;
 }
 

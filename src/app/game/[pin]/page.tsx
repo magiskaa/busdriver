@@ -8,6 +8,7 @@ import { IoPerson, IoArrowBack, IoCheckmark, IoClose, IoAdd, IoRemove, IoBus, Io
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { ToastContainer, toast, Slide } from 'react-toastify';
+import { useGameEmotes } from "@/hooks/useGameEmotes";
 
 export default function GamePage({ params }: { params: Promise<{ pin: string }>; }) {
     const router = useRouter();
@@ -40,13 +41,31 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
     const finalizeDrive = useMutation(api.games.finalizeDrive);
     
     const [isSettings, setIsSettings] = useState<boolean>(false);
+    const [isEmote, setIsEmote] = useState<boolean>(false);
     const [sipDistribution, setSipDistribution] = useState<{
         total: number;
         assignments: Record<string, number>;
     } | null>(null);
     const isResolvingDriveRef = useRef(false);
     const isFinalizingDriveRef = useRef(false);
+    const { emotes, sendEmote } = useGameEmotes(
+        gamePin,
+        userId ?? undefined
+    );
 
+    const availableEmotes = [
+        "😂",
+        "😀",
+        "😎",
+        "🤡",
+        "😈",
+        "🍺",
+        "🔥",
+        "❤️",
+        "👏",
+        "💀",
+    ];
+    
     const rowOfIndex = (idx: number) => {
         if (idx >= 10) return 5;
         if (idx >= 6) return 4;
@@ -566,18 +585,47 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                         const hand = game.base.playerHands?.find(hand => hand.userId === player._id);
                         const playerSips = game.base.sips?.find(user => user.userId === player._id);
                         return (
-                            <div key={idx} className="players-hand-div">
+                            <div key={idx} className="players-hand-div relative">
                                 {playerSips && playerSips.sipsReceived > 0 && (
                                     <div className="sipcounter">
                                         +{playerSips.sipsReceived.toString()}
                                     </div>
                                 )}
-                                <p className="players-name-p">{player.username}</p>
-                                <div className="flex flex-row -space-x-0.5">
-                                    {hand?.cards.map((_, idx) => (
-                                        <div key={idx} className="bg-blue-800 rounded-sm w-[12px] h-[19px] border border-white/30 shadow-sm shadow-black/50 sm:w-[15px] sm:h-[24px]"></div>
-                                    ))}
+                                
+                                <div className="profile-pic-div-non-absolute relative !w-[32px] !h-[32px] sm:!w-[50px] sm:!h-[50px]">
+                                    {player?.imageUrl ? (
+                                        <Image 
+                                            src={player.imageUrl} 
+                                            alt="Avatar" 
+                                            fill
+                                            className="object-cover"
+                                        />
+                                    ) : (
+                                        <IoPerson className="profile-pic-icon" />
+                                    )}
                                 </div>
+                                
+                                <div className="flex flex-row -space-x-0.75">
+                                    {hand && hand.cards.length ? (
+                                        hand?.cards.map((_, idx) => (
+                                            <div key={idx} className="bg-blue-800 rounded-sm w-[12px] h-[19px] border border-white/30 shadow-sm shadow-black/50 sm:w-[15px] sm:h-[24px]"></div>
+                                        ))
+                                    ) : (
+                                        <p className=""></p>
+                                    )}
+                                </div>
+
+                                {emotes
+                                    .filter((emote) => emote.userId === player._id)
+                                    .map((emote) => (
+                                        <div
+                                            key={emote.id}
+                                            className="pointer-events-none absolute left-8 bottom-0 z-30 -translate-x-1/2 text-4xl animate-emote-pop"
+                                        >
+                                            {emote.emoji}
+                                        </div>
+                                    ))
+                                }
                             </div>
                         )
                     })}
@@ -616,10 +664,62 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                     <div className="pyramid-row-div">
                         {[10, 11, 12, 13, 14].map(renderBoardCard)}
                     </div>
+                    
+                    <button 
+                        className="absolute !w-[50px] !h-[50px] !bg-zinc-800 right-0 !rounded-full !p-0 sm:!w-[70px] sm:!h-[70px]"
+                        onClick={() => setIsEmote(true)}
+                    >
+                        <p className="sm:text-3xl">😂</p>
+                    </button>
                 </div>
 
 
-                <div className="player-cards-div">
+                {isEmote && (
+                    <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+                        <div className="main-div max-w-md !p-2 sm:!p-3">
+                            <h2 className="text-center py-1">Emote</h2>
+                            <p className="text-blue-500 text-center font-bold mb-3">
+                                Choose your emote
+                            </p>
+                            
+                            <div className="flex flex-wrap justify-center gap-2 pb-4">
+                                {availableEmotes.map((emoji) => (
+                                    <button
+                                        key={emoji}
+                                        type="button"
+                                        onClick={() => {
+                                            sendEmote(emoji);
+                                            setIsEmote(false);
+                                        }}
+                                        className="!m-0 !h-10 !w-10 !rounded-full !bg-zinc-800 !p-0 text-2xl"
+                                    >
+                                        {emoji}
+                                    </button>
+                                ))}
+                            </div>
+                            
+                            <button 
+                                onClick={() => setIsEmote(false)}
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                <div className="player-cards-div relative">
+                    {emotes
+                        .filter((emote) => emote.userId === userId)
+                        .map((emote) => (
+                            <div
+                                key={emote.id}
+                                className="pointer-events-none absolute bottom-full z-30 -translate-x-1/2 pb-3 text-6xl animate-emote-pop"
+                            >
+                                {emote.emoji}
+                            </div>
+                        ))
+                    }
+
                     <div className="player-stats-div">
                         <div className="w-[50vw] flex items-baseline justify-center">
                             <span className="text-zinc-400 text-xs sm:text-base">
