@@ -7,7 +7,7 @@ import { Id } from "../../../../convex/_generated/dataModel";
 import { IoPerson, IoArrowBack, IoCheckmark, IoClose, IoAdd, IoRemove, IoBus, IoCog, IoTrash, IoExitOutline } from "react-icons/io5";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { showToast } from "nextjs-toast-notify";
+import { ToastContainer, toast, Slide } from 'react-toastify';
 
 export default function GamePage({ params }: { params: Promise<{ pin: string }>; }) {
     const router = useRouter();
@@ -173,13 +173,18 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
 
     useEffect(() => {
         if (game?.status === "active" && mySips?.sipsReceived && mySips?.sipsReceived !== 0) {
-            showToast.success("Drink up, you got some sips!", {
-                duration: 5000,
-                position: "top-center",
-                transition: "bounceIn",
-                icon: "🍺",
-                sound: true,
-                progress: true
+            toast('Drink up!🍺 You got some sips!', {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: false,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                pauseOnFocusLoss: true,
+                rtl: false,
+                theme: "dark",
+                transition: Slide,
             });
         }
     }, [game?.status, mySips?.sipsReceived]);
@@ -366,7 +371,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                         );
                     })}
                 </div>
-
+                
                 <div className="flex-1 flex flex-col items-center justify-center gap-2.5 py-1 sm:gap-3 sm:py-2">
                     <div className="pyramid-row-div">
                         {[0].map(renderBoardCard)}
@@ -548,6 +553,13 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
 
         return (
             <main className="!py-0 !gap-1.5 sm:!gap-4">
+                <ToastContainer
+                    newestOnTop={false}
+                    className="!rounded-sm !left-auto !right-8 !w-[calc(100vw-4rem)] sm:!right-0 sm:!w-[320px]"
+                    progressClassName="!rounded-xl !bg-green-800"
+                    toastClassName="!rounded-sm !bg-green-600 !text-white"
+                />
+
                 <div className="players-hands-div">
                     {players?.map((player, idx) => {
                         if (player._id === userId) return null;

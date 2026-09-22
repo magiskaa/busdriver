@@ -5,6 +5,7 @@
 	--foreground: #ededed;
 }
 
+
 @theme inline {
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
@@ -26,6 +27,13 @@ button {
 	disabled:bg-zinc-700 disabled:text-zinc-500 disabled:shadow-zinc-500/10 disabled:cursor-not-allowed
 	active:scale-[0.95]  
 	sm:mt-2 sm:py-4
+}
+
+.Toastify__close-button {
+	width: auto !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	box-shadow: none !important;
 }
 
 input {
