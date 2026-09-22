@@ -336,21 +336,22 @@ h2 {
 @keyframes emote-pop {
     0% {
         opacity: 0;
-        transform: translate(-50%, 10px) scale(0.4);
+        transform: translate(-50%, 0px) scale(0.8);
     }
 
-    35% {
+    15% {
         opacity: 1;
-        transform: translate(-50%, 0) scale(1.2);
+        transform: translate(-50%, -8px) scale(1.2);
     }
 
-    70% {
-        transform: translate(-50%, -4px) scale(1);
+    80% {
+		opacity: 1;
+        transform: translate(-50%, -8px) scale(1);
     }
 
     100% {
         opacity: 0;
-        transform: translate(-50%, -30px) scale(0.9);
+        transform: translate(-50%, -60px) scale(0.3);
     }
 }
 

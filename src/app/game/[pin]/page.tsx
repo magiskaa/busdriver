@@ -57,6 +57,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
         "😂",
         "😀",
         "😎",
+        "🥱",
         "🤡",
         "😈",
         "🍺",
@@ -786,64 +787,75 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                             </p>
                             
                             <div className="flex flex-col gap-2 max-h-[80vh] overflow-y-auto mb-4">
-                                {players?.map(player => (
-                                    <div key={player._id} className="player-div !p-2.5">
-                                        <div className="flex items-center gap-3">
-                                            <div className="profile-pic-div-non-absolute relative">
-                                                {player?.imageUrl ? (
-                                                    <Image 
-                                                        src={player.imageUrl} 
-                                                        alt="Avatar" 
-                                                        fill
-                                                        className="object-cover"
-                                                    />
-                                                ) : (
-                                                    <IoPerson className="profile-pic-icon" />
+                                {players?.map(player => {
+                                    const playerSips = game.base.sips?.find(user => user.userId === player._id);
+
+                                    return (
+                                        <div key={player._id} className="player-div !p-2.5">
+                                            <div className="flex items-center gap-3 relative">
+                                                <div className="profile-pic-div-non-absolute relative">
+                                                    {player?.imageUrl ? (
+                                                        <Image 
+                                                            src={player.imageUrl} 
+                                                            alt="Avatar" 
+                                                            fill
+                                                            className="object-cover"
+                                                        />
+                                                    ) : (
+                                                        <IoPerson className="profile-pic-icon" />
+                                                    )}
+                                                </div>
+                                                
+                                                <span className="player-p">
+                                                    {player.username}
+                                                </span>
+
+                                                {playerSips && playerSips.sipsReceived > 0 && (
+                                                    <div className="sipcounter !-top-2.5 !-left-2.5 !right-auto sm:!-top-4">
+                                                        +{playerSips.sipsReceived.toString()}
+                                                    </div>
                                                 )}
                                             </div>
-                                            <span className="player-p">
-                                                {player.username}
-                                            </span>
-                                        </div>
-                                        
-                                        <div className="flex items-center gap-3">
-                                            <button 
-                                                onClick={() => {
-                                                    const current = sipDistribution.assignments[player._id] || 0;
-                                                    if (current > 0) {
-                                                        setSipDistribution({
-                                                            ...sipDistribution,
-                                                            assignments: { ...sipDistribution.assignments, [player._id]: current - 1 }
-                                                        });
-                                                    }
-                                                }}
-                                                className="!w-[40px] !h-[40px] !rounded-full !bg-blue-700 flex items-center justify-center !shadow-blue-600/20 hover:!bg-blue-600 sm:!w-[50px] sm:!h-[50px]"
-                                            >
-                                                <IoRemove size={25} />
-                                            </button>
                                             
-                                            <span className="text-2xl font-black w-5 text-center">
-                                                {sipDistribution.assignments[player._id] || 0}
-                                            </span>
-                                            
-                                            <button 
-                                                onClick={() => {
-                                                    const current = sipDistribution.assignments[player._id] || 0;
-                                                    const totalAssigned = Object.values(sipDistribution.assignments).reduce((a, b) => a + b, 0);
-                                                    if (totalAssigned < sipDistribution.total) {
-                                                        setSipDistribution({
-                                                            ...sipDistribution,
-                                                            assignments: { ...sipDistribution.assignments, [player._id]: current + 1 }
-                                                        });
-                                                    }
-                                                }}
-                                                className="!w-[40px] !h-[40px] !rounded-full !bg-blue-700 flex items-center justify-center !shadow-blue-600/20 hover:!bg-blue-600 sm:!w-[50px] sm:!h-[50px]"
-                                            >
-                                                <IoAdd size={25} />
-                                            </button>
+                                            <div className="flex items-center gap-3">
+                                                <button 
+                                                    onClick={() => {
+                                                        const current = sipDistribution.assignments[player._id] || 0;
+                                                        if (current > 0) {
+                                                            setSipDistribution({
+                                                                ...sipDistribution,
+                                                                assignments: { ...sipDistribution.assignments, [player._id]: current - 1 }
+                                                            });
+                                                        }
+                                                    }}
+                                                    className="!w-[40px] !h-[40px] !rounded-full !bg-blue-700 flex items-center justify-center !shadow-blue-600/20 hover:!bg-blue-600 sm:!w-[50px] sm:!h-[50px]"
+                                                >
+                                                    <IoRemove size={25} />
+                                                </button>
+                                                
+                                                <span className="text-2xl font-black w-5 text-center">
+                                                    {sipDistribution.assignments[player._id] || 0}
+                                                </span>
+                                                
+                                                <button 
+                                                    onClick={() => {
+                                                        const current = sipDistribution.assignments[player._id] || 0;
+                                                        const totalAssigned = Object.values(sipDistribution.assignments).reduce((a, b) => a + b, 0);
+                                                        if (totalAssigned < sipDistribution.total) {
+                                                            setSipDistribution({
+                                                                ...sipDistribution,
+                                                                assignments: { ...sipDistribution.assignments, [player._id]: current + 1 }
+                                                            });
+                                                        }
+                                                    }}
+                                                    className="!w-[40px] !h-[40px] !rounded-full !bg-blue-700 flex items-center justify-center !shadow-blue-600/20 hover:!bg-blue-600 sm:!w-[50px] sm:!h-[50px]"
+                                                >
+                                                    <IoAdd size={25} />
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    )}
+                                )}
                             </div>
                             
                             <button 
