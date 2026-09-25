@@ -241,6 +241,15 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
         );
     }
 
+    if (!game?.players.find(p => p === userId)) {
+        return (
+            <main className="loading-main">
+                <h1 className="loading-h1 mb-2">You are not welcome in this game, please leave.</h1>
+                <button onClick={() => router.replace("/")}>Take me home</button>
+            </main>
+        )
+    }
+
     if (game?.status === "finished") {
         return (
             <main>
@@ -380,13 +389,37 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                         if (player._id === loser) return null;
                         const playerSips = game.base.sips?.find(user => user.userId === player._id);
                         return (
-                            <div key={idx} className="players-hand-div !w-[110px] sm:!w-[135px]">
+                            <div key={idx} className="players-hand-div relative">
                                 {playerSips && playerSips.sipsReceived > 0n && (
                                     <div className="sipcounter">
                                         +{playerSips.sipsReceived.toString()}
                                     </div>
                                 )}
-                                <p className="players-name-p !max-w-[105px] sm:!max-w-[135px]">{player.username}</p>
+                     
+                                <div className="profile-pic-div-non-absolute relative !w-[32px] !h-[32px] sm:!w-[50px] sm:!h-[50px]">
+                                    {player?.imageUrl ? (
+                                        <Image 
+                                            src={player.imageUrl} 
+                                            alt="Avatar" 
+                                            fill
+                                            className="object-cover"
+                                        />
+                                    ) : (
+                                        <IoPerson className="profile-pic-icon" />
+                                    )}
+                                </div>
+                     
+                                {emotes
+                                    .filter((emote) => emote.userId === player._id)
+                                    .map((emote) => (
+                                        <div
+                                            key={emote.id}
+                                            className="pointer-events-none absolute left-8 bottom-0 z-30 -translate-x-1/2 text-4xl animate-emote-pop"
+                                        >
+                                            {emote.emoji}
+                                        </div>
+                                    ))
+                                }
                             </div>
                         );
                     })}
@@ -408,20 +441,74 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                     <div className="pyramid-row-div">
                         {[10, 11, 12, 13, 14].map(renderBoardCard)}
                     </div>
+
                     {game.drive.finishAt && (
                         <p className="text-center mt-2 text-3xl font-black sm:mt-4 sm:text-4xl">Game Finished!</p>
                     )}
+
+                    <button 
+                        className="absolute !w-[50px] !h-[50px] !bg-zinc-800 right-0 !rounded-full !p-0 sm:!w-[70px] sm:!h-[70px]"
+                        onClick={() => setIsEmote(true)}
+                    >
+                        <p className="sm:text-3xl">😂</p>
+                    </button>
                 </div>
 
-                <div className="player-cards-div !gap-0">
+                <div className="player-cards-div !gap-0 relative">
+                    {emotes
+                        .filter((emote) => emote.userId === game.drive.loser)
+                        .map((emote) => (
+                            <div
+                                key={emote.id}
+                                className="pointer-events-none absolute bottom-full z-30 -translate-x-1/2 pb-3 text-6xl animate-emote-pop"
+                            >
+                                {emote.emoji}
+                            </div>
+                        ))
+                    }
+
                     <p className="flex-1 text-zinc-400 text-xs sm:text-base">LOSER</p>
                     <p className="text-2xl font-bold text-blue-500 mb-2 sm:text-3xl">{players?.find(player => player._id === loser)?.username ?? "Username"}</p>
+                    
                     <strong className="relative text-4xl text-white sm:text-5xl">{game.drive.sips}
                         <span className="absolute -right-9 text-zinc-400 text-sm sm:text-base">
                             ({game?.base.sips?.find(user => user.userId === loser)?.sipsReceived ?? 0})
                         </span>
                     </strong>
                 </div>
+
+                {isEmote && (
+                    <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+                        <div className="main-div max-w-md !p-2 sm:!p-3">
+                            <h2 className="text-center py-1">Emote</h2>
+                            <p className="text-blue-500 text-center font-bold mb-3">
+                                Choose your emote
+                            </p>
+                            
+                            <div className="flex flex-wrap justify-center gap-2 pb-4">
+                                {availableEmotes.map((emoji) => (
+                                    <button
+                                        key={emoji}
+                                        type="button"
+                                        onClick={() => {
+                                            sendEmote(emoji);
+                                            setIsEmote(false);
+                                        }}
+                                        className="!m-0 !h-10 !w-10 !rounded-full !bg-zinc-800 !p-0 text-2xl"
+                                    >
+                                        {emoji}
+                                    </button>
+                                ))}
+                            </div>
+                            
+                            <button 
+                                onClick={() => setIsEmote(false)}
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                )}
             </main>
         );
     }
@@ -580,7 +667,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                     toastClassName="!rounded-sm !bg-green-600 !text-white"
                 />
 
-                <div className="players-hands-div">
+                <div className="players-hands-div wrap">
                     {players?.map((player, idx) => {
                         if (player._id === userId) return null;
                         const hand = game.base.playerHands?.find(hand => hand.userId === player._id);
@@ -635,10 +722,10 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                 <div className="flex-1 relative flex flex-col items-center justify-center gap-1.5 py-0 sm:gap-3 sm:py-2">
                     {isBaseGameDone && (
                         <button
-                            className={`!w-[90px] flex flex-col items-center justify-center gap-1 absolute right-0 top-4 !p-1 !text-base sm:!text-xl sm:!w-[120px] ${userId && game.drive.ready.includes(userId) ? "!bg-green-600 hover:!bg-green-500 !shadow-green-600/20" : "!bg-red-700 hover:!bg-red-600 !shadow-red-700/20"}`}
+                            className={`!w-[100px] flex flex-col items-center justify-center gap-1 absolute right-0 top-4 !p-1 !text-base sm:!text-xl sm:!w-[120px] ${userId && game.drive.ready.includes(userId) ? "!bg-green-600 hover:!bg-green-500 !shadow-green-600/20" : "!bg-red-700 hover:!bg-red-600 !shadow-red-700/20"}`}
                             onClick={() => userId && readyUp({ id: userId, pin: gamePin, isStart: false })}
                         >
-                            Ready
+                            Ready Up
                             <span>{game?.drive?.ready?.length ?? 0} / {game.players.length}</span>
                         </button>
                     )}
@@ -975,7 +1062,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                         disabled={!userId}
                         onClick={() => userId && readyUp({ pin: gamePin, id: userId, isStart: true })}
                     >
-                        {players?.find(player => player._id === userId)?.ready === true ? "Ready" : "Not Ready"}
+                        Ready Up
                     </button>
 
                     <button
