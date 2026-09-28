@@ -4,7 +4,7 @@ import { use, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
-import { IoPerson, IoArrowBack, IoCheckmark, IoClose, IoAdd, IoRemove, IoBus, IoCog, IoTrash, IoExitOutline } from "react-icons/io5";
+import { IoPerson, IoArrowBack, IoCheckmark, IoClose, IoAdd, IoRemove, IoBus, IoCog, IoTrash, IoExitOutline, IoPersonAdd } from "react-icons/io5";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { ToastContainer, toast, Slide } from 'react-toastify';
@@ -42,6 +42,8 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
     
     const [isSettings, setIsSettings] = useState<boolean>(false);
     const [isEmote, setIsEmote] = useState<boolean>(false);
+    const [isProfile, setIsProfile] = useState<boolean>(false);
+    const [profileId, setProfileId] = useState<Id<"users"> | undefined>(undefined);
     const [sipDistribution, setSipDistribution] = useState<{
         total: number;
         assignments: Record<string, number>;
@@ -973,6 +975,16 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
     }
 
     if (game?.status === "waiting") {
+        const profilePlayer = players?.find(p => p._id === profileId);
+        const profileImageUrl = profilePlayer?.imageUrl;
+        const profileStats = {
+            games: profilePlayer?.games,
+            lostGames: profilePlayer?.lostGames ?? 0,
+            received: profilePlayer?.sipsReceived,
+            given: profilePlayer?.sipsGiven,
+            drivingSips: profilePlayer?.drivingSips,
+        }
+
         return (
             <main>
                 <header>
@@ -1013,7 +1025,13 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                     <div className="players-list-div">
                         {players ? players.map((player, index) => (
                             <div key={player._id} className="player-div">
-                                <div className="player-name-div">
+                                <div 
+                                    className="player-name-div"
+                                    onClick={() => {
+                                        setIsProfile(true);
+                                        setProfileId(player._id);
+                                    }}
+                                >
                                     <div className="profile-pic-div-non-absolute relative">
                                         {player?.imageUrl ? (
                                             <Image 
@@ -1073,6 +1091,69 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                         {playersReadyStart ? "Start" : `Players ready ${game?.base.ready.length} / ${players?.length}`}
                     </button>
                 </div>
+
+                {isProfile && profileId && (
+                    <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+                        <div className="main-div max-w-md !p-2 relative sm:!p-3">
+                            <div className="player-name-div pt-1.25 !pb-4 px-2">
+                                <div className="profile-pic-div-non-absolute relative !w-[72px] !h-[72px]">
+                                    {profileImageUrl ? (
+                                        <Image 
+                                            src={profileImageUrl} 
+                                            alt="Avatar" 
+                                            fill
+                                            className="object-cover"
+                                        />
+                                    ) : (
+                                        <IoPerson className="profile-pic-icon" />
+                                    )}
+                                </div>
+                                <p className="player-p !text-xl px-4 !max-w-[300px]">
+                                    {profilePlayer?.username || `Player X`}
+                                </p>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-y-4 border-t border-zinc-700 pt-2.5 pb-4">
+                                <p className="profile-stats-p">
+                                    GAMES: <strong className="profile-stats-strong">{profileStats.games}</strong>
+                                </p>
+                                <p className="profile-stats-p">
+                                    SIPS GIVEN: <strong className="profile-stats-strong">{profileStats.given}</strong>
+                                </p>
+                                <p className="profile-stats-p">
+                                    LOST GAMES: <strong className="profile-stats-strong">{profileStats.lostGames}</strong>
+                                </p>
+                                <p className="profile-stats-p">
+                                    SIPS RECEIVED: <strong className="profile-stats-strong">{profileStats.received}</strong>
+                                </p>
+                                <p className="profile-stats-p">
+                                    L%: <strong className="profile-stats-strong">{profileStats ? ((profileStats.lostGames * 100) / (profileStats.games || 1)).toFixed(1) : 0}%</strong>
+                                </p>
+                                <p className="profile-stats-p">
+                                    DRIVING SIPS: <strong className="profile-stats-strong">{profileStats.drivingSips}</strong>
+                                </p>
+                            </div>
+
+                            <div className="settings-div sm:!right-3 sm:!top-3">
+                                <IoPersonAdd 
+                                    className="add-friend-icon" 
+                                    onClick={() => {
+                                        
+                                    }}
+                                />
+                            </div>
+
+                            <button 
+                                onClick={async () => {
+                                    setIsProfile(false);
+                                    setProfileId(undefined);
+                                }}
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 {isSettings && (
                     <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">

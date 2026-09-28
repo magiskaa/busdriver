@@ -81,6 +81,9 @@ export const getPlayers = query({
 					imageUrl: user.image ? await ctx.storage.getUrl(user.image) : null,
 					games: stats?.games ?? 0,
 					lostGames: stats?.lostGames ?? 0,
+					sipsReceived: stats?.sipsReceived ?? 0,
+					sipsGiven: stats?.sipsGiven ?? 0,
+					drivingSips: stats?.drivingSips ?? 0,
 					ready: game?.base.ready.includes(id),
 				};
 			})
