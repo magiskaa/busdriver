@@ -6,7 +6,7 @@ import { useMutation, useQuery } from "convex/react";
 import { useConvexAuth, useAuthActions } from "@convex-dev/auth/react";
 import { useEffect, useState, useRef } from "react";
 import { api } from "../../../convex/_generated/api";
-import { IoPerson, IoArrowBack } from "react-icons/io5";
+import { IoPerson, IoArrowBack, IoWalk } from "react-icons/io5";
 
 export default function ProfilePage() {
     const router = useRouter();
@@ -100,8 +100,8 @@ export default function ProfilePage() {
                 <IoArrowBack className="back-arrow-icon" onClick={() => router.push("/")} />
             </div>
 
-            <div className="main-div flex flex-col gap-4 sm:gap-8">
-                <div className="flex items-center justify-start gap-8">
+            <div className="main-div flex flex-col">
+                <div className="flex items-center justify-start gap-8 relative">
                     <div className="profile-pic-div-non-absolute relative !w-[100px] !h-[100px] sm:!w-[120px] sm:!h-[120px]">
                         {user?.imageUrl ? (
                             <Image 
@@ -127,9 +127,14 @@ export default function ProfilePage() {
                             Edit profile
                         </button>
                     </div>
+
+                    <IoWalk 
+                        className="sign-out-icon"
+                        onClick={() => signOut()}
+                    />
                 </div>
                 
-                <div className="grid grid-cols-2 gap-y-4 border-t border-zinc-700 pt-2.5 sm:pt-8">
+                <div className="grid grid-cols-2 gap-y-2 border-t border-zinc-700 py-2.5 mt-3 sm:gap-y-3 sm:py-4">
                     <p className="profile-stats-p">
                         GAMES: <strong className="profile-stats-strong">{stats?.games?.toString() || 0}</strong>
                     </p>
@@ -149,15 +154,11 @@ export default function ProfilePage() {
                         DRIVING SIPS: <strong className="profile-stats-strong">{stats?.drivingSips?.toString() || 0}</strong>
                     </p>
                 </div>
-            </div>
 
-            <div className="main-div">
-                <h2>Played Games</h2>
-
-                <div className="flex flex-col items-center justify-start h-[145px] overflow-y-auto border-t border-zinc-700 pt-0.5 mt-2.5 sm:h-[220px]">
+                <div className="flex flex-col items-center justify-start h-[250px] overflow-y-auto border-t border-zinc-700 pt-0 mt-0 sm:h-[350px]">
                     {games ? (games.map((game, idx) => (
                         <div key={idx} className="flex flex-row items-center justify-between gap-2 p-2 w-full border-b border-zinc-800">
-                            <p className="text-zinc-400 font-medium text-lg sm:text-xl">
+                            <p className="text-zinc-400 font-medium text-base sm:text-lg">
                                 {new Date(game._creationTime).toLocaleDateString()} <br /> 
                                 {new Date(game._creationTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </p>
@@ -182,15 +183,6 @@ export default function ProfilePage() {
                         <p className="italic-text p-2">No games played.</p>
                     )}
                 </div>
-            </div>
-
-            <div className="bottom-button-div">
-                <button
-                    className="!bg-red-700 hover:!bg-red-600 !shadow-red-700/20"
-                    onClick={() => signOut()}
-                >
-                    Sign out
-                </button>
             </div>
 
             {isEditProfile && (

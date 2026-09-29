@@ -153,13 +153,13 @@ export default function Home() {
 			</header>
 
 			<div 
-				className="w-[50px] h-[50px] flex items-center justify-center absolute left-3 top-3 bg-zinc-800/70 rounded-full shadow-md shadow-zinc-600/30 active:scale-[0.95]"
+				className="w-[40px] h-[40px] flex items-center justify-center absolute left-3 top-3 bg-zinc-800/70 rounded-full shadow-md shadow-zinc-600/30 active:scale-[0.95] sm:w-[60px] sm:h-[60px] sm:left-12 sm:top-8"
 				onClick={() => setIsBugReportList(true)}
 			>
 				<IoBug className="bug-icon" />
 			</div>
 
-			<div className="profile-pic-div !fixed active:scale-[1.1]">
+			<div className="profile-pic-div !fixed active:scale-[0.95]">
 				{user?.imageUrl ? (
 					<Image
 						src={user?.imageUrl || ""} 
@@ -268,7 +268,7 @@ export default function Home() {
 										<div className="flex flex-row items-center justify-between gap-10">
 											<div className="flex flex-row items-center justify-between gap-4 active:scale-[0.95]">
 												<IoThumbsUpSharp 
-													className={`thumbs-up-icon ${userId && report.details?.likes.includes(userId) ? "!text-green-500" : ""}`}
+													className={`thumbs-up-icon ${userId && report.details?.likes.includes(userId) ? "!text-green-700" : ""}`}
 													onClick={() => userId && like({ userId, reportId: report._id })} 
 												/>
 												<p>{report.details?.likes.length || 0}</p>
@@ -276,7 +276,7 @@ export default function Home() {
 
 											<div className="flex flex-row items-center justify-between gap-4 active:scale-[0.95]">
 												<IoThumbsDownSharp 
-													className={`thumbs-down-icon ${userId && report.details?.dislikes.includes(userId) ? "!text-red-500" : ""}`} 
+													className={`thumbs-down-icon ${userId && report.details?.dislikes.includes(userId) ? "!text-red-700" : ""}`} 
 													onClick={() => userId && dislike({ userId, reportId: report._id })}
 												/>
 												<p>{report.details?.dislikes.length || 0}</p>
@@ -285,7 +285,7 @@ export default function Home() {
 										</div>
 										{report.details?.fixed ? (
 											<IoCheckbox 
-												className="thumbs-up-icon mr-4 sm:mr-7 !text-green-600 active:scale-[0.95]" 
+												className="thumbs-up-icon mr-4 sm:mr-7 !text-green-700 active:scale-[0.95]" 
 												onClick={() => userId && fixed({ userId, reportId: report._id })}
 											/>
 										) : (
@@ -312,7 +312,7 @@ export default function Home() {
 
 			{isBugReport && (
 				<div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-					<div className="main-div max-w-md !p-2 relative">
+					<div className="main-div max-w-lg !p-2 relative">
 						<h2 className="text-center pt-2 mb-4">Write a new Bug <br/> Report or Suggestion</h2>
 
 						<div className="back-arrow-div !m-0 !absolute top-4 left-4">

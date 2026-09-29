@@ -115,7 +115,7 @@ h2 {
 .profile-pic-div {
 	@apply 
 	absolute right-3 top-3 w-[40px] h-[40px] bg-zinc-600 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden
-	sm:right-8 sm:top-8 sm:w-[48px] sm:h-[48px]
+	sm:right-12 sm:top-8 sm:w-[60px] sm:h-[60px]
 }
 
 .profile-pic-div-non-absolute {
@@ -313,7 +313,7 @@ h2 {
 
 .bug-icon {
 	@apply
-	text-zinc-400 w-[32px] h-[32px]
+	text-zinc-400 w-[28px] h-[28px]
 	sm:w-[38px] sm:h-[38px]
 }
 
@@ -325,6 +325,14 @@ h2 {
 .thumbs-down-icon {
 	@apply
 	text-zinc-400 w-[24px] h-[24px]
+}
+
+.sign-out-icon {
+	@apply
+	text-red-700 !w-[36px] !h-[36px] absolute top-2 right-0
+	hover:text-red-600 
+	active:scale-[0.9]  
+	sm:!w-[44px] sm:!h-[44px]
 }
 
 .settings-div {
