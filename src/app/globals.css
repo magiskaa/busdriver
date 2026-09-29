@@ -22,7 +22,7 @@ body {
 
 button {
 	@apply 
-	w-full bg-green-600 text-white font-black py-1.5 rounded-xl text-xl transition-all shadow-lg shadow-green-600/20 
+	w-full bg-green-600 text-white font-bold py-1 rounded-xl text-lg transition-all shadow-lg shadow-green-600/20 
 	hover:bg-green-500
 	disabled:bg-zinc-700 disabled:text-zinc-500 disabled:shadow-zinc-500/10 disabled:cursor-not-allowed
 	active:scale-[0.95]  
@@ -74,7 +74,7 @@ h1 {
 
 .error-p {
 	@apply 
-	text-sm text-red-600 mx-auto -my-2
+	text-sm text-red-600 text-center mx-auto
 	sm:text-base
 }
 
@@ -100,7 +100,7 @@ h2 {
 
 .main-p {
 	@apply 
-	text-zinc-400 text-sm pt-1 mt-1 border-t border-zinc-700 leading-snug 
+	text-zinc-400 text-sm pt-2 mt-1.5 border-t border-zinc-700 leading-snug 
 	sm:text-base sm:pt-3 sm:mt-3
 }
 

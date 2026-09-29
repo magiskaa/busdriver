@@ -68,7 +68,7 @@ export default function Home() {
 			return;
 		}
 		if (trimmedPin.length != 4) {
-			setErrorMessage("Enter a PIN code that is 6 characters long.");
+			setErrorMessage("Enter a PIN code that is 4 characters long.");
 			return;
 		}
 		
@@ -172,13 +172,13 @@ export default function Home() {
 					<IoPerson className="profile-pic-icon" onClick={() => router.push("/profile")} />
 				)}
 			</div>
-				
+
 			{errorMessage && <p className="error-p">{errorMessage ?? "Error occurred. Please try again."}</p>}
 
 			<div className="main-div">
-				<h2>Join Game</h2>
+				<h2 className="-mt-1">Play</h2>
 				<p className="main-p">
-					Join a game that your friend created by entering it&apos;s PIN code, or create a new game below.
+					Join a game by entering it&apos;s 4 character PIN code.
 				</p>
 
 				<form className="mt-2 flex flex-col gap-3 sm:mt-4 sm:gap-4" onSubmit={handleJoining}>
@@ -197,11 +197,8 @@ export default function Home() {
 						{isJoining ? "Joining..." : "Join"}
 					</button>
 				</form>
-			</div>
-
-			<div className="main-div">
-				<h2>Create Game</h2>
-				<p className="main-p">
+				
+				<p className="main-p !mt-3">
 					Create a new game and share the generated PIN code to your friends.
 				</p>
 				<button
@@ -211,11 +208,8 @@ export default function Home() {
 					>
 					Create
 				</button>
-			</div>
-
-			<div className="main-div">
-				<h2>Ongoing Game</h2>
-				<p className="main-p">
+				
+				<p className="main-p !mt-3">
 					Join back to a game that is not yet finished.
 				</p>
 				<button
@@ -225,6 +219,25 @@ export default function Home() {
 					>
 					{ongoingGame ? "Join" : "No ongoing game"}
 				</button>
+			</div>
+
+			<div className="main-div">
+				<h2 className="-mt-1">News and updates</h2>
+
+				<div className="flex flex-col items-center justify-start h-[160px] overflow-y-auto border-t border-zinc-700 pt-0 mt-1.5 sm:h-[350px]">
+					<p className="main-p !mt-0 !border-0">
+						29.9.2026 - Added a password reset form into the sign in page, added a bug report list for everyone to see along with a voting system and a &quot;fixed&quot; checkmark for every report, added &quot;News and updates&quot;, modified profile page and home page. 
+					</p>
+					<p className="main-p">
+						28.9.2026 - Added the ability to inspect anyones profile and their stats in game lobby.
+					</p>
+					<p className="main-p">
+						25.9.2026 - Added emotes to driving, added a check to prevent players accessing games they are not a part of (Thank you Veeti!).
+					</p>
+					<p className="main-p">
+						22.9.2026 - Added received sips to sip distribution screen, added emotes and updated in-game player cards, updated toast notification when receiving sips.
+					</p>
+				</div>
 			</div>
 
 			{isBugReportList && (
@@ -268,7 +281,7 @@ export default function Home() {
 										<div className="flex flex-row items-center justify-between gap-10">
 											<div className="flex flex-row items-center justify-between gap-4 active:scale-[0.95]">
 												<IoThumbsUpSharp 
-													className={`thumbs-up-icon ${userId && report.details?.likes.includes(userId) ? "!text-green-700" : ""}`}
+													className={`thumbs-up-icon ${userId && report.details?.likes.includes(userId) ? "!text-green-600" : ""}`}
 													onClick={() => userId && like({ userId, reportId: report._id })} 
 												/>
 												<p>{report.details?.likes.length || 0}</p>
@@ -276,7 +289,7 @@ export default function Home() {
 
 											<div className="flex flex-row items-center justify-between gap-4 active:scale-[0.95]">
 												<IoThumbsDownSharp 
-													className={`thumbs-down-icon ${userId && report.details?.dislikes.includes(userId) ? "!text-red-700" : ""}`} 
+													className={`thumbs-down-icon ${userId && report.details?.dislikes.includes(userId) ? "!text-red-600" : ""}`} 
 													onClick={() => userId && dislike({ userId, reportId: report._id })}
 												/>
 												<p>{report.details?.dislikes.length || 0}</p>
@@ -285,7 +298,7 @@ export default function Home() {
 										</div>
 										{report.details?.fixed ? (
 											<IoCheckbox 
-												className="thumbs-up-icon mr-4 sm:mr-7 !text-green-700 active:scale-[0.95]" 
+												className="thumbs-up-icon mr-4 sm:mr-7 !text-green-600 active:scale-[0.95]" 
 												onClick={() => userId && fixed({ userId, reportId: report._id })}
 											/>
 										) : (
