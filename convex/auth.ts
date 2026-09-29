@@ -1,5 +1,7 @@
 import { convexAuth } from "@convex-dev/auth/server";
 import { Password } from "@convex-dev/auth/providers/Password";
+import { ResetPassword } from "./resetPassword";
+import { validatePasswordRequirements } from "./passwordRequirements";
 
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
     providers: [
@@ -10,6 +12,8 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
                     username: params.username as string,
                 };
             },
+            validatePasswordRequirements,
         }),
+        ResetPassword
     ],
 });

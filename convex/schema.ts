@@ -8,7 +8,8 @@ export default defineSchema({
         email: v.optional(v.string()),
         username: v.optional(v.string()),
         image: v.optional(v.string()),
-    }).index("by_username", ["username"]),
+    }).index("by_username", ["username"])
+      .index("by_email", ["email"]),
     stats: defineTable({
         userId: v.id("users"),
         games: v.number(),
