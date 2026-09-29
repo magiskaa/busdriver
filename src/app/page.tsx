@@ -5,7 +5,7 @@ import { useMutation, useQuery } from "convex/react";
 import { useConvexAuth } from "@convex-dev/auth/react";
 import { SubmitEvent, useEffect, useState } from "react";
 import { api } from "../../convex/_generated/api";
-import { IoPerson, IoBug, IoArrowBack } from "react-icons/io5";
+import { IoPerson, IoBug, IoArrowBack, IoSend, IoThumbsUpSharp, IoThumbsDownSharp, IoCheckboxOutline, IoCheckbox } from "react-icons/io5";
 import Image from "next/image";
 import { showToast } from "nextjs-toast-notify";
 
@@ -23,12 +23,18 @@ export default function Home() {
 	
 	const createGame = useMutation(api.games.create);
 	const joinGame = useMutation(api.games.join);
+    const users = useQuery(api.users.getUsers);
+    const reports = useQuery(api.reports.get);
 	const addReport = useMutation(api.reports.add);
+	const like = useMutation(api.reports.like);
+	const dislike = useMutation(api.reports.dislike);
+	const fixed = useMutation(api.reports.fixed);
 
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 	
 	const [pin, setPin] = useState<string>("");
 	const [isJoining, setIsJoining] = useState<boolean>(false);
+    const [isBugReportList, setIsBugReportList] = useState<boolean>(false);
 	const [isBugReport, setIsBugReport] = useState<boolean>(false);
 	const [text, setText] = useState<string>("");
 
@@ -146,6 +152,13 @@ export default function Home() {
 				</p>
 			</header>
 
+			<div 
+				className="w-[50px] h-[50px] flex items-center justify-center absolute left-3 top-3 bg-zinc-800/70 rounded-full shadow-md shadow-zinc-600/30 active:scale-[0.95]"
+				onClick={() => setIsBugReportList(true)}
+			>
+				<IoBug className="bug-icon" />
+			</div>
+
 			<div className="profile-pic-div !fixed active:scale-[1.1]">
 				{user?.imageUrl ? (
 					<Image
@@ -176,7 +189,7 @@ export default function Home() {
 						value={pin}
 						onChange={(event) => setPin(event.target.value.toUpperCase())}
 						disabled={isJoining}
-					/>
+						/>
 					<button
 						type="submit"
 						disabled={isJoining || ongoingGame ? true : false}
@@ -195,7 +208,7 @@ export default function Home() {
 					className="mt-2 sm:mt-4 sm:py-4"
 					disabled={ongoingGame ? true : false}
 					onClick={handleCreating}
-				>
+					>
 					Create
 				</button>
 			</div>
@@ -209,23 +222,98 @@ export default function Home() {
 					className="mt-2 sm:mt-4 sm:py-4"
 					disabled={!ongoingGame}
 					onClick={handleOngoing}
-				>
+					>
 					{ongoingGame ? "Join" : "No ongoing game"}
 				</button>
 			</div>
 
-			<div 
-				className="main-div flex flex-row items-center gap-2 !bg-zinc-800/90 text-xs !border-zinc-700 !py-1 !rounded-full !w-fit absolute right-3 bottom-3 active:scale-[1.05]"
-				onClick={() => setIsBugReport(true)}
-			>
-				<IoBug className="bug-icon" />
-				<p className="text-zinc-400">Report a bug, or <br /> make a suggestion.</p>
-			</div>
+			{isBugReportList && (
+				<div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+					<div className="main-div max-w-xl !p-2 relative">
+						<h2 className="text-center pt-2 mb-4">Bug Reports <br/> & Suggestions</h2>
+
+						<div 
+							className="w-[50px] h-[50px] flex items-center justify-center absolute right-3 top-3 bg-zinc-800/70 rounded-full shadow-md shadow-zinc-600/30 active:scale-[0.95]"
+							onClick={() => setIsBugReport(true)}
+						>
+							<IoSend className="bug-icon !w-[28px] !h-[28px]" />
+						</div>
+						
+						<div className="flex flex-col items-center justify-start h-[70vh] overflow-y-auto border-t border-zinc-700 pt-0.5 mt-2.5">
+							{reports ? (reports.map((report, idx) => (
+								<div key={idx} className="flex flex-col items-top justify-between gap-2 p-2 w-full border-b border-zinc-800">
+									<div className="flex flex-row items-center justify-start gap-2 mt-1">
+										<div className="profile-pic-div-non-absolute relative">
+											{users?.find(user => user._id === report.userId)?.imageUrl ? (
+												<Image
+													src={users?.find(user => user._id === report.userId)?.imageUrl || ""} 
+													alt="Avatar" 
+													fill
+													className="object-cover"
+												/>
+											) : (
+												<IoPerson className="profile-pic-icon" />
+											)}
+										</div>
+										<p className="px-1.5 flex-1 text-lg sm:text-xl">{users?.find(user => user._id === report.userId)?.username}</p>
+										<p className="text-zinc-400 font-medium text-sm sm:text-lg">
+											{new Date(report._creationTime).toLocaleDateString()} <br /> 
+											{new Date(report._creationTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+										</p>
+									</div>
+									
+									<p className="my-1">{report.text}</p>
+
+									<div className="flex flex-row items-center justify-between mb-1">
+										<div className="flex flex-row items-center justify-between gap-10">
+											<div className="flex flex-row items-center justify-between gap-4 active:scale-[0.95]">
+												<IoThumbsUpSharp 
+													className={`thumbs-up-icon ${userId && report.details?.likes.includes(userId) ? "!text-green-500" : ""}`}
+													onClick={() => userId && like({ userId, reportId: report._id })} 
+												/>
+												<p>{report.details?.likes.length || 0}</p>
+											</div>
+
+											<div className="flex flex-row items-center justify-between gap-4 active:scale-[0.95]">
+												<IoThumbsDownSharp 
+													className={`thumbs-down-icon ${userId && report.details?.dislikes.includes(userId) ? "!text-red-500" : ""}`} 
+													onClick={() => userId && dislike({ userId, reportId: report._id })}
+												/>
+												<p>{report.details?.dislikes.length || 0}</p>
+											</div>
+
+										</div>
+										{report.details?.fixed ? (
+											<IoCheckbox 
+												className="thumbs-up-icon mr-4 sm:mr-7 !text-green-600 active:scale-[0.95]" 
+												onClick={() => userId && fixed({ userId, reportId: report._id })}
+											/>
+										) : (
+											<IoCheckboxOutline 
+												className="thumbs-up-icon mr-4 sm:mr-7 active:scale-[0.95]" 
+												onClick={() => userId && fixed({ userId, reportId: report._id })}
+											/>
+										)}
+									</div>
+								</div>
+							))) : (
+								<p className="italic-text p-2">No bug reports or suggestions.</p>
+							)}
+						</div>
+
+						<button
+							onClick={() => setIsBugReportList(false)}
+						>
+							Close
+						</button>
+					</div>
+				</div>
+			)}
 
 			{isBugReport && (
 				<div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
 					<div className="main-div max-w-md !p-2 relative">
-						<h2 className="text-center pt-2 mb-4">Bug Report</h2>
+						<h2 className="text-center pt-2 mb-4">Write a new Bug <br/> Report or Suggestion</h2>
 
 						<div className="back-arrow-div !m-0 !absolute top-4 left-4">
 							<IoArrowBack className="back-arrow-icon" onClick={() => setIsBugReport(false)} />
@@ -234,7 +322,7 @@ export default function Home() {
 						<textarea 
 							name="report" 
 							id="reportText" 
-							className="bg-zinc-100 text-black px-2.5 py-1.5 mt-1.5 mb-3 rounded-xl border border-zinc-200 outline-none transition-all w-full focus:ring-2 focus:ring-green-600 sm:px-4 sm:py-3"
+							className="h-[200px] bg-zinc-100 text-black px-2.5 py-1.5 mt-1.5 mb-3 rounded-xl border border-zinc-200 outline-none transition-all w-full focus:ring-2 focus:ring-green-600 sm:px-4 sm:py-3"
 							onChange={(event) => setText(event.target.value)}
 						/>
 

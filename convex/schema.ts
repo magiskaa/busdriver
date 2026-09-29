@@ -20,6 +20,11 @@ export default defineSchema({
     reports: defineTable({
         userId: v.id("users"),
         text: v.string(),
+        details: v.optional(v.object({
+            likes: v.array(v.id("users")),
+            dislikes: v.array(v.id("users")),
+            fixed: v.boolean(),
+        })),
     }).index("by_userId", ["userId"]),
     games: defineTable({
         pin: v.string(),

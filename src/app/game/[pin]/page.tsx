@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { ToastContainer, toast, Slide } from 'react-toastify';
 import { useGameEmotes } from "@/hooks/useGameEmotes";
+import { BiWinkSmile } from "react-icons/bi";
 
 export default function GamePage({ params }: { params: Promise<{ pin: string }>; }) {
     const router = useRouter();
@@ -60,6 +61,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
         "😀",
         "😎",
         "🥱",
+        "😭",
         "🤡",
         "😈",
         "🍺",
@@ -448,12 +450,12 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                         <p className="text-center mt-2 text-3xl font-black sm:mt-4 sm:text-4xl">Game Finished!</p>
                     )}
 
-                    <button 
-                        className="absolute !w-[50px] !h-[50px] !bg-zinc-800 right-0 !rounded-full !p-0 sm:!w-[70px] sm:!h-[70px]"
+                    <div 
+                        className="absolute w-[50px] h-[50px] flex items-center justify-center bg-zinc-800/70 right-0 rounded-full shadow-md shadow-zinc-600/30 active:scale-[0.95] sm:w-[70px] sm:h-[70px]"
                         onClick={() => setIsEmote(true)}
                     >
-                        <p className="sm:text-3xl">😂</p>
-                    </button>
+                        <BiWinkSmile className="bug-icon" />
+                    </div>
                 </div>
 
                 <div className="player-cards-div !gap-0 relative">
@@ -755,12 +757,12 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                         {[10, 11, 12, 13, 14].map(renderBoardCard)}
                     </div>
                     
-                    <button 
-                        className="absolute !w-[50px] !h-[50px] !bg-zinc-800 right-0 !rounded-full !p-0 sm:!w-[70px] sm:!h-[70px]"
+                    <div 
+                        className="absolute w-[50px] h-[50px] flex items-center justify-center bg-zinc-800/70 right-0 rounded-full shadow-md shadow-zinc-600/30 active:scale-[0.95] sm:w-[70px] sm:h-[70px]"
                         onClick={() => setIsEmote(true)}
                     >
-                        <p className="sm:text-3xl">😂</p>
-                    </button>
+                        <BiWinkSmile className="bug-icon" />
+                    </div>
                 </div>
 
 
@@ -819,12 +821,12 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                         </div>
 
                         <div 
-                            className="w-[50vw] flex items-baseline justify-center"
+                            className="w-[50vw] flex items-baseline justify-center bg-zinc-800/70 rounded-xl shadow-md shadow-zinc-600/30 active:scale-[0.95]"
                             onClick={() => userId && updateCounter({ pin: gamePin, userId: userId })}
                         >
-                            <strong className="player-stats-strong">{game.base.playerHands?.find(hand => hand.userId === userId)?.counter || 0}</strong>
+                            <strong className="player-stats-strong">{(mySips?.sipsReceived || 0) - (game.base.playerHands?.find(hand => hand.userId === userId)?.counter || 0)}</strong>
 
-                            <span className="text-zinc-400 text-xs sm:text-base ml-2 sm:ml-4">CONSUMED</span>
+                            <span className="text-zinc-400 text-xs sm:text-base ml-2 sm:ml-4">SIPS TO DRINK</span>
                         </div>
                     </div>
 

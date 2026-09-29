@@ -109,12 +109,6 @@ h2 {
 	text-zinc-500 italic
 }
 
-.bug-icon {
-	@apply
-	text-zinc-400 w-[32px] h-[32px]
-	sm:w-[38px] sm:h-[38px]
-}
-
 
 /* ---------------------- PROFILE SCREEN ---------------------- */
 /* PROFILE PIC */
@@ -302,7 +296,7 @@ h2 {
 }
 
 
-/* ---------------------- BACK ARROW, SETTINGS, TRASH CAN & ADD FRIEND ---------------------- */
+/* ---------------------- BACK ARROW, BUG, SETTINGS, TRASH CAN & ADD FRIEND ---------------------- */
 .back-arrow-div {
 	@apply 
 	absolute left-3 top-3 w-[40px] h-[40px] flex items-center justify-center
@@ -317,10 +311,34 @@ h2 {
 	sm:w-[48px] sm:h-[48px]
 }
 
+.bug-icon {
+	@apply
+	text-zinc-400 w-[32px] h-[32px]
+	sm:w-[38px] sm:h-[38px]
+}
+
+.thumbs-up-icon {
+	@apply
+	text-zinc-300 w-[24px] h-[24px]
+}
+
+.thumbs-down-icon {
+	@apply
+	text-zinc-400 w-[24px] h-[24px]
+}
+
 .settings-div {
 	@apply 
 	absolute right-3 top-3 w-[40px] h-[40px] flex items-center justify-center
 	sm:right-8 sm:top-8 sm:w-[50px] sm:h-[50px]
+}
+
+.trash-can-icon {
+	@apply
+	text-red-700 !w-[28px] !h-[28px]
+	hover:text-red-600 
+	active:scale-[0.9]  
+	sm:!w-[34px] sm:!h-[34px]
 }
 
 .add-friend-icon {
