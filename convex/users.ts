@@ -37,7 +37,7 @@ export const getUsers = query({
     handler: async (ctx) => {
         const users = await ctx.db
             .query("users")
-            .collect();
+            .take(200);
         
         return Promise.all(
             users.map(async (user) => {

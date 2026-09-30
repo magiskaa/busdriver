@@ -311,10 +311,18 @@ h2 {
 	sm:w-[48px] sm:h-[48px]
 }
 
+.card-icon {
+	@apply
+	text-white w-[36px] h-[36px]
+	hover:text-zinc-300
+	active:scale-[0.9]
+	sm:w-[44px] sm:h-[44px]
+}
+
 .bug-icon {
 	@apply
 	text-zinc-400 w-[28px] h-[28px]
-	sm:w-[38px] sm:h-[38px]
+	sm:w-[36px] sm:h-[36px]
 }
 
 .thumbs-up-icon {

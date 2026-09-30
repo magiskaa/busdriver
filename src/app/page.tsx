@@ -7,7 +7,7 @@ import { SubmitEvent, useEffect, useState } from "react";
 import { api } from "../../convex/_generated/api";
 import { IoPerson, IoBug, IoArrowBack, IoSend, IoThumbsUpSharp, IoThumbsDownSharp, IoCheckboxOutline, IoCheckbox } from "react-icons/io5";
 import Image from "next/image";
-import { showToast } from "nextjs-toast-notify";
+import { ToastContainer, toast, Slide } from 'react-toastify';
 
 export default function Home() {
 	const router = useRouter();
@@ -131,20 +131,32 @@ export default function Home() {
 		} catch {
 			setErrorMessage("Sending bug report failed. Try again.");
 		} finally {
-			showToast.success("Bug report sent successfully!", {
-				duration: 3000,
-				position: "top-center",
-				transition: "bounceIn",
-				icon: "🪲",
-				sound: true,
-				progress: true
-			});
+			toast('🪲 Bug report sent successfully!', {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: false,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                pauseOnFocusLoss: true,
+                rtl: false,
+                theme: "dark",
+                transition: Slide,
+            });
 		}
 		setIsBugReport(false);
     };
 
 	return (
 		<main>
+			<ToastContainer
+				newestOnTop={false}
+				className="!rounded-sm !left-auto !right-8 !w-[calc(100vw-4rem)] sm:!right-0 sm:!w-[320px]"
+				progressClassName="!rounded-xl !bg-green-800"
+				toastClassName="!rounded-sm !bg-green-600 !text-white"
+			/>
+
 			<header>
 				<h1>Busdriver</h1>
 				<p className="header-p">
@@ -226,6 +238,9 @@ export default function Home() {
 
 				<div className="flex flex-col items-center justify-start h-[160px] overflow-y-auto border-t border-zinc-700 pt-0 mt-1.5 sm:h-[350px]">
 					<p className="main-p !mt-0 !border-0">
+						30.9.2026 - Optimized database calls, added card color customization (accessible from profile).
+					</p>
+					<p className="main-p">
 						29.9.2026 - Added a password reset form into the sign in page, added a bug report list for everyone to see along with a voting system and a &quot;fixed&quot; checkmark for every report, added &quot;News and updates&quot;, modified profile page and home page. 
 					</p>
 					<p className="main-p">

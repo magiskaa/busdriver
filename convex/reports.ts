@@ -6,9 +6,10 @@ export const get = query({
     handler: async (ctx) => {
         const reports = await ctx.db
             .query("reports")
-            .collect();
+            .order("desc")
+            .take(100);
 
-        return reports.reverse();
+        return reports;
     },
 });
 

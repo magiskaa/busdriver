@@ -11,6 +11,18 @@ import { ToastContainer, toast, Slide } from 'react-toastify';
 import { useGameEmotes } from "@/hooks/useGameEmotes";
 import { BiWinkSmile } from "react-icons/bi";
 
+const IMPORTANT_COLOR_CLASS: Record<string, string> = {
+    "bg-green-600": "!bg-green-600",
+    "bg-red-500": "!bg-red-500",
+    "bg-yellow-400": "!bg-yellow-400",
+    "bg-blue-600": "!bg-blue-600",
+    "bg-orange-400": "!bg-orange-400",
+    "bg-purple-600": "!bg-purple-600",
+    "bg-zinc-400": "!bg-zinc-400",
+    "bg-zinc-800": "!bg-zinc-800",
+    "bg-white": "!bg-white",
+};
+
 export default function GamePage({ params }: { params: Promise<{ pin: string }>; }) {
     const router = useRouter();
     const { pin: gamePin } = use(params);
@@ -21,6 +33,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
     const game = useQuery(api.games.getGame, gamePin ? { pin: gamePin } : "skip");
     const players = useQuery(api.games.getPlayers, game?.players ? { pin: gamePin, ids: game.players } : "skip");
     const ongoingGame = useQuery(api.games.getOngoing, userId ? { userId: userId } : "skip");
+    const cardColors = useQuery(api.cards.getCardColors, userId ? { userId } : "skip");
     
     const leaveGame = useMutation(api.games.leave);
     const readyUp = useMutation(api.games.ready);
@@ -40,7 +53,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
     const revealDriveCard = useMutation(api.games.revealDriveCard);
     const resolveDriveRound = useMutation(api.games.resolveDriveRound);
     const finalizeDrive = useMutation(api.games.finalizeDrive);
-    
+
     const [isSettings, setIsSettings] = useState<boolean>(false);
     const [isEmote, setIsEmote] = useState<boolean>(false);
     const [isProfile, setIsProfile] = useState<boolean>(false);
@@ -55,6 +68,8 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
         gamePin,
         userId ?? undefined
     );
+
+    
 
     const availableEmotes = [
         "😂",
@@ -641,7 +656,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                     <div 
                         key={index} 
                         onClick={() => revealCard({ pin: gamePin, index })}
-                        className={`card ${isActiveRow ? "card-active" : "card-inactive"}`}
+                        className={`card ${cardColors ? IMPORTANT_COLOR_CLASS[cardColors.backColor] ?? "" : ""} ${isActiveRow ? "card-active" : "card-inactive"}`}
                     >
                         <div className="card-middle">
                             <p className="card-middle-p">?</p>
@@ -653,7 +668,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
             return (
                 <div 
                     key={index} 
-                    className={`card-revealed ${isActiveRow ? "card-revealed-active" : "card-inactive"}`}
+                    className={`card-revealed ${cardColors ? IMPORTANT_COLOR_CLASS[cardColors.faceColor] ?? "" : ""} ${isActiveRow ? "card-revealed-active" : "card-inactive"}`}
                 >
                     <p className={`card-revealed-p ${isRed ? "text-red-600" : "text-black"}`}>
                         {card}
@@ -855,7 +870,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                                             });
                                         }
                                     }}
-                                    className={`card-revealed ${canPlay ? "cursor-pointer border-yellow-400 ring-2 ring-yellow-400 -translate-y-1.5 shadow-yellow-400/40" : "opacity-85 border-zinc-300"}`}
+                                    className={`card-revealed ${cardColors ? IMPORTANT_COLOR_CLASS[cardColors.faceColor] ?? "" : ""} ${canPlay ? "cursor-pointer border-yellow-400 ring-2 ring-yellow-400 -translate-y-1.5 shadow-yellow-400/40" : "opacity-85 border-zinc-300"}`}
                                 >
                                     <p className={`card-revealed-p ${isRed ? "text-red-600" : "text-black"}`}>
                                         {card}
@@ -1062,7 +1077,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                                     </div>
                                 </div>
 
-                                {player.ready ? (
+                                {game.base.ready.includes(player._id) ? (
                                     <div className="flex justify-end">
                                         <IoCheckmark size={38} className="text-green-600 ml-2 sm:ml-4" />
                                     </div>
@@ -1078,7 +1093,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
 
                 <div className="bottom-button-div">
                     <button
-                        className={`${players?.find(player => player._id === userId)?.ready === true ? "!bg-green-600 hover:!bg-green-500 !shadow-green-600/20" : "!bg-red-700 hover:!bg-red-600 !shadow-red-700/20"}`} 
+                        className={`${userId && game.base.ready.includes(userId) ? "!bg-green-600 hover:!bg-green-500 !shadow-green-600/20" : "!bg-red-700 hover:!bg-red-600 !shadow-red-700/20"}`} 
                         disabled={!userId}
                         onClick={() => userId && readyUp({ pin: gamePin, id: userId, isStart: true })}
                     >

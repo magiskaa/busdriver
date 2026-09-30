@@ -30,6 +30,7 @@ export default defineSchema({
     games: defineTable({
         pin: v.string(),
         status: v.union(v.literal("waiting"), v.literal("active"), v.literal("tied"), v.literal("driving"), v.literal("finished")),
+        active: v.boolean(),
         host: v.id("users"),
         players: v.array(v.id("users")),
         base: v.object({
@@ -70,5 +71,12 @@ export default defineSchema({
             lastRevealedIndex: v.optional(v.number()),
             finishAt: v.optional(v.number()),
         }),
-    }).index("by_pin", ["pin"]),
+    }).index("by_pin", ["pin"])
+      .index("by_active", ["active"])
+      .index("by_status", ["status"]),
+    cards: defineTable({
+        userId: v.id("users"),
+        backColor: v.optional(v.string()),
+        faceColor: v.optional(v.string()),
+    }).index("by_userId", ["userId"]),
 });

@@ -7,6 +7,7 @@ import { useConvexAuth, useAuthActions } from "@convex-dev/auth/react";
 import { useEffect, useState, useRef } from "react";
 import { api } from "../../../convex/_generated/api";
 import { IoPerson, IoArrowBack, IoWalk } from "react-icons/io5";
+import { GiCardAceSpades } from "react-icons/gi";
 
 export default function ProfilePage() {
     const router = useRouter();
@@ -21,18 +22,32 @@ export default function ProfilePage() {
     const user = useQuery(api.users.getUser);
     const stats = useQuery(api.stats.getStats, userId ? { userId: userId } : "skip");
     const games = useQuery(api.stats.getGames, userId ? { userId: userId } : "skip");
-    const users = useQuery(api.users.getUsers);
-    const reports = useQuery(api.reports.get);
-
+    
     const updateUser = useMutation(api.users.update);
     const generateUploadUrl = useMutation(api.users.generateUploadUrl);
+    const cards = useMutation(api.cards.getCards);
+    const updateCards = useMutation(api.cards.updateCards);
 
     const [isEditProfile, setIsEditProfile] = useState<boolean>(false);
     const [username, setUsername] = useState<string>("");
     const [selectedImage, setSelectedImage] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-    const [isBugReportList, setIsBugReportList] = useState<boolean>(false);
+    const [isModify, setIsModify] = useState<boolean>(false);
+    const [backColor, setBackColor] = useState<string>("bg-blue-600");
+    const [faceColor, setFaceColor] = useState<string>("bg-white");
+
+    const cardColors = [
+        "bg-green-600",
+        "bg-red-500",
+        "bg-yellow-400",
+        "bg-blue-600",
+        "bg-orange-400",
+        "bg-purple-600",
+        "bg-zinc-400",
+        "bg-zinc-800",
+        "bg-white",
+    ];
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -98,6 +113,20 @@ export default function ProfilePage() {
 
             <div className="back-arrow-div">
                 <IoArrowBack className="back-arrow-icon" onClick={() => router.push("/")} />
+            </div>
+
+            <div className="back-arrow-div !right-3 !left-auto">
+                <GiCardAceSpades
+                    className="card-icon"
+                    onClick={async () => {
+                        if (userId) {
+                            const current = await cards({ userId });
+                            setBackColor(current.backColor ?? "bg-blue-600");
+                            setFaceColor(current.faceColor ?? "bg-white");
+                        }
+                        setIsModify(true);
+                    }}
+                />
             </div>
 
             <div className="main-div flex flex-col">
@@ -246,54 +275,60 @@ export default function ProfilePage() {
                 </div>
             )}
 
-            <div 
-                className="w-[50px] h-[50px] absolute right-3 top-3"
-                onClick={() => setIsBugReportList(true)}
-            ></div>
-
-            {isBugReportList && (
+            {isModify && (
                 <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
                     <div className="main-div max-w-md !p-2 relative">
-                        <h2 className="text-center pt-2 mb-4">Bug Reports <br /> & Suggestions</h2>
+                        <h2 className="text-center pt-2 mb-4">Modify your cards</h2>
 
                         <div className="back-arrow-div !m-0 !absolute top-4 left-4">
-                            <IoArrowBack className="back-arrow-icon" onClick={() => setIsBugReportList(false)} />
+                            <IoArrowBack className="back-arrow-icon" onClick={() => setIsModify(false)} />
                         </div>
-                        
-                        <div className="flex flex-col items-center justify-start h-[60vh] overflow-y-auto border-t border-zinc-700 pt-0.5 mt-2.5 sm:h-[220px]">
-                            {reports ? (reports.map((report, idx) => (
-                                <div key={idx} className="flex flex-col items-top justify-between gap-2 p-2 w-full border-b border-zinc-800">
-                                    <div className="flex flex-row items-center justify-start gap-2">
-                                        <div className="profile-pic-div-non-absolute relative">
-                                            {users?.find(user => user._id === report.userId)?.imageUrl ? (
-                                                <Image
-                                                    src={users?.find(user => user._id === report.userId)?.imageUrl || ""} 
-                                                    alt="Avatar" 
-                                                    fill
-                                                    className="object-cover"
-                                                />
-                                            ) : (
-                                                <IoPerson className="profile-pic-icon" />
-                                            )}
-                                        </div>
-                                        <p className="px-1.5 flex-1 text-lg sm:text-xl">{users?.find(user => user._id === report.userId)?.username}</p>
-                                        <p className="text-zinc-400 font-medium text-lg sm:text-xl">
-                                            {new Date(report._creationTime).toLocaleDateString()} <br /> 
-                                            {new Date(report._creationTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                        </p>
-                                    </div>
-                                    
-                                    <p className="mb-1.5">{report.text}</p>
+
+                        <div className="flex flex-col items-center justify-between gap-5 mb-6">
+                            <div className="flex flex-col items-center gap-1.5">
+                                <p className="font-bold">The back</p>
+                                <div className="flex flex-row items-center justify-between flex-wrap gap-2">
+                                    {cardColors.map((color, idx) => (
+                                        <div
+                                            key={idx}
+                                            onClick={() => setBackColor(color)}
+                                            className={`${color} rounded-md cursor-pointer transition-all ${
+                                                backColor === color
+                                                    ? "w-[38px] h-[38px] outline outline-2 outline-offset-2 outline-white"
+                                                    : "w-[30px] h-[30px]"
+                                            }`}
+                                        ></div>
+                                    ))}
                                 </div>
-                            ))) : (
-                                <p className="italic-text p-2">No bug reports or suggestions.</p>
-                            )}
+                            </div>
+
+                            <div className="flex flex-col items-center gap-1.5">
+                                <p className="font-bold">The face</p>
+                                <div className="flex flex-row items-center justify-between flex-wrap gap-2">
+                                    {cardColors.map((color, idx) => (
+                                        <div
+                                            key={idx}
+                                            onClick={() => setFaceColor(color)}
+                                            className={`${color} rounded-md cursor-pointer transition-all ${
+                                                faceColor === color
+                                                    ? "w-[38px] h-[38px] outline outline-2 outline-offset-2 outline-white"
+                                                    : "w-[30px] h-[30px]"
+                                            }`}
+                                        ></div>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
 
                         <button
-                            onClick={() => setIsBugReportList(false)}
+                            onClick={async () => {
+                                if (userId) {
+                                    await updateCards({ userId, backColor, faceColor });
+                                }
+                                setIsModify(false);
+                            }}
                         >
-                            Close
+                            Save
                         </button>
                     </div>
                 </div>

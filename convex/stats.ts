@@ -57,10 +57,11 @@ export const getGames = query({
     handler: async (ctx, args) => {
         const games = await ctx.db
             .query("games")
+            .withIndex("by_status", (query) => query.eq("status", "finished"))
             .collect();
 
         return games
-            .filter((g) => g.status === "finished" && g.players.includes(args.userId))
+            .filter((g) => g.players.includes(args.userId))
             .sort((a, b) => b._creationTime - a._creationTime);
     },
 });

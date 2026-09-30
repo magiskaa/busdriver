@@ -61,11 +61,6 @@ export const getPlayers = query({
 		ids: v.array(v.id("users")),
 	},
 	handler: async (ctx, args) => {
-		const game = await ctx.db
-			.query("games")
-			.withIndex("by_pin", (query) => query.eq("pin", args.pin))
-			.unique();
-
 		const players = await Promise.all(
 			args.ids.map(async (id) => {
 				const user = await ctx.db.get(id);
@@ -84,7 +79,6 @@ export const getPlayers = query({
 					sipsReceived: stats?.sipsReceived ?? 0,
 					sipsGiven: stats?.sipsGiven ?? 0,
 					drivingSips: stats?.drivingSips ?? 0,
-					ready: game?.base.ready.includes(id),
 				};
 			})
 		);
@@ -99,16 +93,7 @@ export const getOngoing = query({
 	handler: async (ctx, args) => {
 		const games = await ctx.db
 			.query("games")
-			.filter((q) =>
-				q.and(
-					q.or(
-						q.eq(q.field("status"), "waiting"),
-						q.eq(q.field("status"), "active"),
-						q.eq(q.field("status"), "tied"),
-						q.eq(q.field("status"), "driving")
-					)
-				)
-			)
+			.withIndex("by_active", (q) => q.eq("active", true))
 			.collect();
 
 		const game = games.find((g) => g.players.includes(args.userId));
@@ -135,6 +120,7 @@ export const create = mutation({
 		await ctx.db.insert("games", {
 			pin,
 			status: "waiting",
+			active: true,
 			host: args.userId,
 			players: [args.userId],
 			base: {
@@ -310,6 +296,7 @@ export const rematch = mutation({
 		await ctx.db.insert("games", {
 			pin: pin,
 			status: "waiting",
+			active: true,
 			host: args.host,
 			players: args.players,
 			base: {
@@ -854,41 +841,44 @@ export const finalizeDrive = mutation({
 		const finishAt = game.drive.finishAt;
 		if (!finishAt || Date.now() < finishAt) return;
 
-		for (const playerId of game.players) {
-			const sipsReceived = game.base.sips?.find((entry) => entry.userId === playerId)?.sipsReceived ?? 0;
-			const sipsGiven = game.base.sips?.find((entry) => entry.userId === playerId)?.sipsGiven ?? 0;
+		await Promise.all(
+			game.players.map(async (playerId) => {
+				const sipsReceived = game.base.sips?.find((entry) => entry.userId === playerId)?.sipsReceived ?? 0;
+				const sipsGiven = game.base.sips?.find((entry) => entry.userId === playerId)?.sipsGiven ?? 0;
 
-			const isLoser = game.drive.loser === playerId;
-			const lostGames = isLoser ? 1 : 0;
-			const drivingSips = isLoser ? game.drive.sips ?? 0 : 0;
+				const isLoser = game.drive.loser === playerId;
+				const lostGames = isLoser ? 1 : 0;
+				const drivingSips = isLoser ? game.drive.sips ?? 0 : 0;
 
-			const stats = await ctx.db
-				.query("stats")
-				.withIndex("by_userId", (query) => query.eq("userId", playerId))
-				.unique();
+				const stats = await ctx.db
+					.query("stats")
+					.withIndex("by_userId", (query) => query.eq("userId", playerId))
+					.unique();
 
-			if (!stats) {
-				await ctx.db.insert("stats", {
-					userId: playerId,
-					games: 1,
-					lostGames,
-					sipsReceived,
-					sipsGiven,
-					drivingSips,
-				});
-			} else {
-				await ctx.db.patch(stats._id, {
-					games: stats.games + 1,
-					lostGames: stats.lostGames + lostGames,
-					sipsReceived: stats.sipsReceived + sipsReceived,
-					sipsGiven: stats.sipsGiven + sipsGiven,
-					drivingSips: stats.drivingSips + drivingSips,
-				});
-			}
-		}
+				if (!stats) {
+					await ctx.db.insert("stats", {
+						userId: playerId,
+						games: 1,
+						lostGames,
+						sipsReceived,
+						sipsGiven,
+						drivingSips,
+					});
+				} else {
+					await ctx.db.patch(stats._id, {
+						games: stats.games + 1,
+						lostGames: stats.lostGames + lostGames,
+						sipsReceived: stats.sipsReceived + sipsReceived,
+						sipsGiven: stats.sipsGiven + sipsGiven,
+						drivingSips: stats.drivingSips + drivingSips,
+					});
+				}
+			})
+		);
 
 		await ctx.db.patch(game._id, {
 			status: "finished",
+			active: false,
 			drive: {
 				...game.drive,
 				dealNewRoundAt: undefined,
