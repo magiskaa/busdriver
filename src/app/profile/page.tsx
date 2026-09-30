@@ -428,8 +428,6 @@ export default function ProfilePage() {
                                             return (
                                                 <div
                                                     key={achievement.name}
-                                                    title={`${achievement.text}${achievement.earned ? " (earned)" : " (not earned)"}`}
-                                                    aria-label={`${achievement.text}, ${material.name} rank${achievement.earned ? ", earned" : ", not earned"}`}
                                                     className={`w-[60px] h-[60px] flex items-center justify-center rounded-md border border-white/20 font-bold shadow-inner shadow-black/30 ${achievement.earned ? "" : "grayscale opacity-35"}`}
                                                     style={{ background: material.background }}
                                                 >
