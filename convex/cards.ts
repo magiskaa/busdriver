@@ -14,6 +14,7 @@ export const getCardColors = query({
         return {
             backColor: cards?.backColor ?? "bg-blue-600",
             faceColor: cards?.faceColor ?? "bg-white",
+            colors: cards?.colors ?? [],
         };
     },
 });
@@ -33,12 +34,14 @@ export const getCards = mutation({
                 userId: args.userId,
                 backColor: "bg-blue-600",
                 faceColor: "bg-white",
+                colors: [],
             });
 
             return {
                 userId: args.userId,
                 backColor: "bg-blue-600",
                 faceColor: "bg-white",
+                colors: [],
             };
         } else return cards;
     },
@@ -61,6 +64,7 @@ export const updateCards = mutation({
                 userId: args.userId,
                 backColor: args.backColor,
                 faceColor: args.faceColor,
+                colors: [],
             });
             return;
         }

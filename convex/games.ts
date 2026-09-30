@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { achievementCategories } from "./achievements";
 
 function generatePin() {
 	const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ23456789";
@@ -843,34 +844,107 @@ export const finalizeDrive = mutation({
 
 		await Promise.all(
 			game.players.map(async (playerId) => {
-				const sipsReceived = game.base.sips?.find((entry) => entry.userId === playerId)?.sipsReceived ?? 0;
-				const sipsGiven = game.base.sips?.find((entry) => entry.userId === playerId)?.sipsGiven ?? 0;
-
-				const isLoser = game.drive.loser === playerId;
-				const lostGames = isLoser ? 1 : 0;
-				const drivingSips = isLoser ? game.drive.sips ?? 0 : 0;
-
 				const stats = await ctx.db
 					.query("stats")
 					.withIndex("by_userId", (query) => query.eq("userId", playerId))
 					.unique();
+				
+				const gameSipsReceived = game.base.sips?.find((entry) => entry.userId === playerId)?.sipsReceived ?? 0;
+				const gameSipsGiven = game.base.sips?.find((entry) => entry.userId === playerId)?.sipsGiven ?? 0;
+				const gameDrivingSips = (game.drive.sips ?? 0);
+				const isLoser = game.drive.loser === playerId;
+				const games = (stats?.games ?? 0);
+				const lostGames = (stats?.lostGames ?? 0);
+				const sipsReceived = (stats?.sipsReceived ?? 0);
+				const sipsGiven = (stats?.sipsGiven ?? 0);
+				const drivingSips = (stats?.drivingSips ?? 0);
+				const drivingRecord = (stats?.drivingRecord ?? 0);
+				const losingStreak = (stats?.currentLosingStreak ?? 0);
+
+				const newStats = {
+					games: games + 1,
+					lostGames: isLoser ? lostGames + 1 : lostGames,
+					sipsReceived: sipsReceived + gameSipsReceived,
+					sipsGiven: sipsGiven + gameSipsGiven,
+					drivingSips: isLoser ? drivingSips + gameDrivingSips : drivingSips,
+					drivingRecord: isLoser && gameDrivingSips > drivingRecord ? gameDrivingSips : drivingRecord,
+					currentLosingStreak: isLoser ? losingStreak + 1 : 0,
+				};
 
 				if (!stats) {
 					await ctx.db.insert("stats", {
 						userId: playerId,
-						games: 1,
-						lostGames,
-						sipsReceived,
-						sipsGiven,
-						drivingSips,
+						...newStats
 					});
 				} else {
 					await ctx.db.patch(stats._id, {
-						games: stats.games + 1,
-						lostGames: stats.lostGames + lostGames,
-						sipsReceived: stats.sipsReceived + sipsReceived,
-						sipsGiven: stats.sipsGiven + sipsGiven,
-						drivingSips: stats.drivingSips + drivingSips,
+						...newStats
+					});
+				}
+
+				const achievementDoc = await ctx.db
+					.query("achievements")
+					.withIndex("by_userId", (query) => query.eq("userId", playerId))
+					.unique();
+					
+				const earnedAchievements = achievementDoc?.achieved ?? [];
+				const newAchievements: { category: string; name: string; date: string }[] = [];
+
+				for (const [category, definition] of Object.entries(achievementCategories)) {
+					const value = newStats[definition.metric as keyof typeof newStats];
+					for (const milestone of definition.milestones) {
+						const alreadyEarned = earnedAchievements.some(
+							(achievement) => achievement.category === category && achievement.name === milestone.name,
+						);
+						if (value >= milestone.required && !alreadyEarned) {
+							newAchievements.push({ category, name: milestone.name, date: new Date().toISOString() });
+						}
+					}
+				}
+
+				if (newAchievements.length > 0) {
+					if (achievementDoc) {
+						await ctx.db.patch(achievementDoc._id, {
+							achieved: [...earnedAchievements, ...newAchievements],
+						});
+					} else {
+						await ctx.db.insert("achievements", {
+							userId: playerId,
+							achieved: newAchievements,
+						});
+					}
+				}
+
+				const allEarnedAchievements = [...earnedAchievements, ...newAchievements];
+				const unlockedColors = new Set(
+					Object.entries(achievementCategories).flatMap(([category, definition]) =>
+						definition.milestones
+							.filter((milestone) =>
+								milestone.color && allEarnedAchievements.some(
+									(achievement) => achievement.category === category && achievement.name === milestone.name,
+								),
+							)
+							.map((milestone) => milestone.color),
+					),
+				);
+
+				const cardDoc = await ctx.db
+					.query("cards")
+					.withIndex("by_userId", (query) => query.eq("userId", playerId))
+					.unique();
+				
+				const allUnlockedColors = [...new Set([...(cardDoc?.colors ?? []), ...unlockedColors])];
+
+				if (cardDoc) {
+					if (allUnlockedColors.length !== (cardDoc.colors ?? []).length) {
+						await ctx.db.patch(cardDoc._id, { colors: allUnlockedColors });
+					}
+				} else {
+					await ctx.db.insert("cards", {
+						userId: playerId,
+						backColor: "bg-blue-600",
+						faceColor: "bg-white",
+						colors: allUnlockedColors,
 					});
 				}
 			})

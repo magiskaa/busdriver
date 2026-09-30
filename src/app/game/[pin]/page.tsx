@@ -657,6 +657,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                         key={index} 
                         onClick={() => revealCard({ pin: gamePin, index })}
                         className={`card ${cardColors ? IMPORTANT_COLOR_CLASS[cardColors.backColor] ?? "" : ""} ${isActiveRow ? "card-active" : "card-inactive"}`}
+                        style={cardColors?.backColor.startsWith("#") ? { backgroundColor: cardColors.backColor } : undefined}
                     >
                         <div className="card-middle">
                             <p className="card-middle-p">?</p>
@@ -669,6 +670,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                 <div 
                     key={index} 
                     className={`card-revealed ${cardColors ? IMPORTANT_COLOR_CLASS[cardColors.faceColor] ?? "" : ""} ${isActiveRow ? "card-revealed-active" : "card-inactive"}`}
+                    style={cardColors?.faceColor.startsWith("#") ? { backgroundColor: cardColors.faceColor } : undefined}
                 >
                     <p className={`card-revealed-p ${isRed ? "text-red-600" : "text-black"}`}>
                         {card}
@@ -871,6 +873,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                                         }
                                     }}
                                     className={`card-revealed ${cardColors ? IMPORTANT_COLOR_CLASS[cardColors.faceColor] ?? "" : ""} ${canPlay ? "cursor-pointer border-yellow-400 ring-2 ring-yellow-400 -translate-y-1.5 shadow-yellow-400/40" : "opacity-85 border-zinc-300"}`}
+                                    style={cardColors?.faceColor.startsWith("#") ? { backgroundColor: cardColors.faceColor } : undefined}
                                 >
                                     <p className={`card-revealed-p ${isRed ? "text-red-600" : "text-black"}`}>
                                         {card}
@@ -1005,7 +1008,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
         return (
             <main>
                 <header>
-                    <p className="header-p !text-base sm:!text-lg">Game PIN:</p>
+                    <p className="header-p !text-base !-mb-0.75 sm:!text-lg">Game PIN:</p>
                     <h1 className="text-5xl font-black text-center">{gamePin}</h1>
                 </header>
 

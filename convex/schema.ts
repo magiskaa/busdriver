@@ -17,6 +17,8 @@ export default defineSchema({
         sipsReceived: v.number(),
         sipsGiven: v.number(),
         drivingSips: v.number(),
+        drivingRecord: v.optional(v.number()),
+        currentLosingStreak: v.optional(v.number()),
     }).index("by_userId", ["userId"]),
     reports: defineTable({
         userId: v.id("users"),
@@ -78,5 +80,14 @@ export default defineSchema({
         userId: v.id("users"),
         backColor: v.optional(v.string()),
         faceColor: v.optional(v.string()),
+        colors: v.optional(v.array(v.string())),
+    }).index("by_userId", ["userId"]),
+    achievements: defineTable({
+        userId: v.id("users"),
+        achieved: v.optional(v.array(v.object({
+            category: v.string(),
+            name: v.string(),
+            date: v.string(),
+        }))),
     }).index("by_userId", ["userId"]),
 });

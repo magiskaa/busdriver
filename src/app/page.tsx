@@ -79,7 +79,7 @@ export default function Home() {
 			await joinGame({ pin: trimmedPin, player: userId });
 			router.push(`/game/${trimmedPin}`);
 		} catch {
-			setErrorMessage("Joining the game failed. Try again.");
+			setErrorMessage("Joining the game failed. Check that you have the right PIN.");
 		} finally {
 			setIsJoining(false);
 		}
@@ -165,7 +165,7 @@ export default function Home() {
 			</header>
 
 			<div 
-				className="w-[40px] h-[40px] flex items-center justify-center absolute left-3 top-3 bg-zinc-800/70 rounded-full shadow-md shadow-zinc-600/30 active:scale-[0.95] sm:w-[60px] sm:h-[60px] sm:left-12 sm:top-8"
+				className="w-[40px] h-[40px] flex items-center justify-center absolute left-3 top-3 bg-zinc-800/70 rounded-full active:scale-[0.95] sm:w-[60px] sm:h-[60px] sm:left-12 sm:top-8"
 				onClick={() => setIsBugReportList(true)}
 			>
 				<IoBug className="bug-icon" />
@@ -189,26 +189,47 @@ export default function Home() {
 
 			<div className="main-div">
 				<h2 className="-mt-1">Play</h2>
-				<p className="main-p">
-					Join a game by entering it&apos;s 4 character PIN code.
-				</p>
 
-				<form className="mt-2 flex flex-col gap-3 sm:mt-4 sm:gap-4" onSubmit={handleJoining}>
-					<input
-						className="uppercase"
-						name="text"
-						placeholder="PIN"
-						value={pin}
-						onChange={(event) => setPin(event.target.value.toUpperCase())}
-						disabled={isJoining}
-						/>
-					<button
-						type="submit"
-						disabled={isJoining || ongoingGame ? true : false}
-					>
-						{isJoining ? "Joining..." : "Join"}
-					</button>
-				</form>
+				{ongoingGame ? (
+					<div>
+						<p className="main-p !mt-3">
+							Join back to a game that is not yet finished.
+						</p>
+						<button
+							className="mt-2 sm:mt-4 sm:py-4"
+							disabled={!ongoingGame}
+							onClick={handleOngoing}
+							>
+							{ongoingGame ? "Join" : "No ongoing game"}
+						</button>
+					</div>
+				) : (
+					<div>
+						<p className="main-p">
+							Join a game by entering it&apos;s 4 character PIN code.
+						</p>
+						<form className="mt-2 flex flex-col gap-3 sm:mt-4 sm:gap-4" onSubmit={handleJoining}>
+							<div className="grid grid-cols-2 gap-x-3">
+								<input
+									className="uppercase"
+									name="text"
+									placeholder="PIN"
+									value={pin}
+									onChange={(event) => setPin(event.target.value.toUpperCase())}
+									disabled={isJoining}
+								/>
+
+								<button
+									className=""
+									type="submit"
+									disabled={isJoining || ongoingGame ? true : false || pin.length !== 4}
+								>
+									{isJoining ? "Joining..." : "Join"}
+								</button>
+							</div>
+						</form>
+					</div>
+				)}
 				
 				<p className="main-p !mt-3">
 					Create a new game and share the generated PIN code to your friends.
@@ -220,17 +241,6 @@ export default function Home() {
 					>
 					Create
 				</button>
-				
-				<p className="main-p !mt-3">
-					Join back to a game that is not yet finished.
-				</p>
-				<button
-					className="mt-2 sm:mt-4 sm:py-4"
-					disabled={!ongoingGame}
-					onClick={handleOngoing}
-					>
-					{ongoingGame ? "Join" : "No ongoing game"}
-				</button>
 			</div>
 
 			<div className="main-div">
@@ -238,7 +248,7 @@ export default function Home() {
 
 				<div className="flex flex-col items-center justify-start h-[160px] overflow-y-auto border-t border-zinc-700 pt-0 mt-1.5 sm:h-[350px]">
 					<p className="main-p !mt-0 !border-0">
-						30.9.2026 - Optimized database calls, added card color customization (accessible from profile).
+						30.9.2026 - Added achievements and rewards, added driving record stat, modified home screen and profile screen, optimized database calls, added card color customization (accessible from profile).
 					</p>
 					<p className="main-p">
 						29.9.2026 - Added a password reset form into the sign in page, added a bug report list for everyone to see along with a voting system and a &quot;fixed&quot; checkmark for every report, added &quot;News and updates&quot;, modified profile page and home page. 
@@ -261,7 +271,7 @@ export default function Home() {
 						<h2 className="text-center pt-2 mb-4">Bug Reports <br/> & Suggestions</h2>
 
 						<div 
-							className="w-[50px] h-[50px] flex items-center justify-center absolute right-3 top-3 bg-zinc-800/70 rounded-full shadow-md shadow-zinc-600/30 active:scale-[0.95]"
+							className="w-[50px] h-[50px] flex items-center justify-center absolute right-3 top-3 bg-zinc-800/70 rounded-full active:scale-[0.95]"
 							onClick={() => setIsBugReport(true)}
 						>
 							<IoSend className="bug-icon !w-[28px] !h-[28px]" />

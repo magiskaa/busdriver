@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as achievements from "../achievements.js";
 import type * as auth from "../auth.js";
 import type * as cards from "../cards.js";
 import type * as games from "../games.js";
@@ -25,6 +26,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  achievements: typeof achievements;
   auth: typeof auth;
   cards: typeof cards;
   games: typeof games;

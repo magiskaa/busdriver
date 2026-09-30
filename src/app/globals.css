@@ -22,11 +22,15 @@ body {
 
 button {
 	@apply 
-	w-full bg-green-600 text-white font-bold py-1 rounded-xl text-lg transition-all shadow-lg shadow-green-600/20 
+	w-full bg-green-600 text-white font-bold py-0.5 rounded-xl text-lg transition-all shadow-lg shadow-green-600/20 
 	hover:bg-green-500
 	disabled:bg-zinc-700 disabled:text-zinc-500 disabled:shadow-zinc-500/10 disabled:cursor-not-allowed
 	active:scale-[0.95]  
-	sm:mt-2 sm:py-4
+	sm:mt-0 sm:py-1.5
+}
+
+.Toastify {
+	@apply fixed
 }
 
 .Toastify__close-button {
@@ -38,7 +42,7 @@ button {
 
 input {
 	@apply 
-	bg-zinc-100 text-black px-2.5 py-1.5 rounded-xl border border-zinc-200 outline-none transition-all
+	bg-zinc-100 text-black px-2 py-0.75 rounded-xl border border-zinc-200 outline-none transition-all
 	focus:ring-2 focus:ring-green-600  
 	sm:px-4 sm:py-3
 }
@@ -58,7 +62,7 @@ input {
 
 /* ---------------------- HEADER ---------------------- */
 header {
-	@apply space-y-2
+	@apply space-y-1
 }
 
 h1 {
@@ -82,7 +86,7 @@ h1 {
 /* ---------------------- MAIN & HOME SCREEN ---------------------- */
 main {
 	@apply 
-	mx-auto h-dvh max-h-dvh w-full max-w-3xl overflow-hidden flex flex-col gap-4 p-3 
+	mx-auto h-dvh max-h-dvh w-full max-w-3xl overflow-hidden flex flex-col gap-4 p-3
 	sm:min-h-screen sm:h-auto sm:max-h-none sm:gap-8 sm:p-8
 }
 
@@ -296,7 +300,7 @@ h2 {
 }
 
 
-/* ---------------------- BACK ARROW, BUG, SETTINGS, TRASH CAN & ADD FRIEND ---------------------- */
+/* ---------------------- ICONS ---------------------- */
 .back-arrow-div {
 	@apply 
 	absolute left-3 top-3 w-[40px] h-[40px] flex items-center justify-center
@@ -319,6 +323,22 @@ h2 {
 	sm:w-[44px] sm:h-[44px]
 }
 
+.menu-icon {
+	@apply
+	text-zinc-300 w-[28px] h-[28px] absolute top-2 right-0
+	hover:text-zinc-400
+	active:scale-[0.9]
+	sm:!w-[40px] sm:!h-[40px]
+}
+
+.sign-out-icon {
+	@apply
+	text-red-700 !w-[36px] !h-[36px] absolute top-2 right-0
+	hover:text-red-600 
+	active:scale-[0.9]  
+	sm:!w-[44px] sm:!h-[44px]
+}
+
 .bug-icon {
 	@apply
 	text-zinc-400 w-[28px] h-[28px]
@@ -333,14 +353,6 @@ h2 {
 .thumbs-down-icon {
 	@apply
 	text-zinc-400 w-[24px] h-[24px]
-}
-
-.sign-out-icon {
-	@apply
-	text-red-700 !w-[36px] !h-[36px] absolute top-2 right-0
-	hover:text-red-600 
-	active:scale-[0.9]  
-	sm:!w-[44px] sm:!h-[44px]
 }
 
 .settings-div {
