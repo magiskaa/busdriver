@@ -6,7 +6,7 @@ import { useMutation, useQuery } from "convex/react";
 import { useConvexAuth, useAuthActions } from "@convex-dev/auth/react";
 import { useEffect, useState, useRef } from "react";
 import { api } from "../../../convex/_generated/api";
-import { IoPerson, IoArrowBack, IoWalk } from "react-icons/io5";
+import { IoPerson, IoArrowBack, IoWalk, IoPencil } from "react-icons/io5";
 import { GiCardAceSpades } from "react-icons/gi";
 import { CiMenuKebab } from "react-icons/ci";
 
@@ -43,6 +43,14 @@ export default function ProfilePage() {
     const [faceColor, setFaceColor] = useState<string>("bg-white");
     const [unlockedColors, setUnlockedColors] = useState<string[]>([]);
     const cardColors = ["bg-blue-600", "bg-white", ...unlockedColors];
+    const getCardColorName = (color: string) => {
+        if (color === "bg-blue-600") return "Blue";
+        if (color === "bg-white") return "White";
+
+        return achievementProgress
+            ?.flatMap(({ achievements }) => achievements)
+            .find((achievement) => achievement.color === color)?.colorName ?? "";
+    };
 
     const [isShowAchievements, setIsShowAchievements] = useState<boolean>(false);
     const rankMaterials = [
@@ -144,50 +152,58 @@ export default function ProfilePage() {
 
                     <CiMenuKebab 
                         className="menu-icon" 
-                        onClick={() => setIsMenu(!isMenu)}
+                        onClick={() => setIsMenu(true)}
                     />
 
                     {isMenu && (
-                        <div className="main-div absolute !bg-zinc-800 top-10 right-3 !w-[160px]">
-                            <div 
-                                className="border-b-1 border-zinc-500"
-                                onClick={() => {
-                                    signOut();
-                                    setIsMenu(false);
-                                }}
-                            >
-                                <p className="pb-1 px-0.5 font-bold">Sign Out</p>
-                            </div>
+                        <div 
+                            className="fixed inset-0 bg-black/20 backdrop-blur-xs z-50 flex items-center justify-center p-4"
+                            onClick={() => setIsMenu(false)}
+                        >
+                            <div className="main-div absolute !bg-zinc-800 top-26 right-6 !w-[220px] !pt-3 !border-white/50 shadow-inner shadow-black/30">
+                                <div
+                                    className="flex flex-row items-center justify-between border-b-1 border-zinc-500 pb-1.5 px-0.5"
+                                    onClick={() => {
+                                        setUsername(user?.username || "");
+                                        setIsEditProfile(true);
+                                        setIsMenu(false);
+                                    }}
+                                >
+                                    <p className="font-bold text-lg hover:text-zinc-300 active:scale-[0.9]">Edit profile</p>
 
-                            <div
-                                className="border-b-1 border-zinc-500"
-                                onClick={() => {
-                                    setUsername(user?.username || "");
-                                    setIsEditProfile(true);
-                                    setIsMenu(false);
-                                }}
-                            >
-                                <p className="py-1 px-0.5 font-bold">Edit profile</p>
-                            </div>
-                            
-                            <div
-                                className=""
-                                onClick={async () => {
-                                    if (userId) {
-                                        const current = await cards({ userId });
-                                        setBackColor(current.backColor ?? "bg-blue-600");
-                                        setFaceColor(current.faceColor ?? "bg-white");
-                                        setUnlockedColors(current.colors ?? []);
-                                    }
-                                    setIsModify(true);
-                                    setIsMenu(false);
-                                }}
-                            >
-                                <p className="pt-1 px-0.5 font-bold">Modify Cards</p>
-                            </div>
+                                    <IoPencil className="edit-icon" />
+                                </div>
+                                
+                                <div
+                                    className="flex flex-row items-center justify-between border-b-1 border-zinc-500 py-1.5 px-0.5"
+                                    onClick={async () => {
+                                        if (userId) {
+                                            const current = await cards({ userId });
+                                            setBackColor(current.backColor ?? "bg-blue-600");
+                                            setFaceColor(current.faceColor ?? "bg-white");
+                                            setUnlockedColors(current.colors ?? []);
+                                        }
+                                        setIsModify(true);
+                                        setIsMenu(false);
+                                    }}
+                                >
+                                    <p className="font-bold text-lg hover:text-zinc-300 active:scale-[0.9]">Modify Cards</p>
 
+                                    <GiCardAceSpades className="card-icon" />
+                                </div>  
+                                
+                                <div 
+                                    className="flex flex-row items-center justify-between pt-1.5 px-0.5"
+                                    onClick={() => {
+                                        signOut();
+                                        setIsMenu(false);
+                                    }}
+                                >
+                                    <p className="font-bold text-lg hover:text-zinc-300 active:scale-[0.9]">Sign Out</p>
 
-                            
+                                    <IoWalk className="sign-out-icon" />
+                                </div>
+                            </div>
                         </div>
                     )}
 
@@ -349,36 +365,52 @@ export default function ProfilePage() {
                             <div className="flex flex-col items-center gap-1.5">
                                 <p className="font-bold">The back</p>
                                 <div className="flex flex-row items-center justify-center flex-wrap gap-2">
-                                    {cardColors.map((color, idx) => (
-                                        <div
-                                            key={idx}
-                                            onClick={() => setBackColor(color)}
-                                            className={`${color.startsWith("#") ? "" : color} rounded-md cursor-pointer transition-all ${
-                                                backColor === color
-                                                    ? "w-[38px] h-[38px] outline outline-2 outline-offset-2 outline-white"
-                                                    : "w-[30px] h-[30px]"
-                                            }`}
-                                            style={color.startsWith("#") ? { backgroundColor: color } : undefined}
-                                        ></div>
-                                    ))}
+                                    {cardColors.map((color, idx) => {
+                                        const colorName = getCardColorName(color);
+
+                                        return (
+                                            <div
+                                                key={idx}
+                                                onClick={() => setBackColor(color)}
+                                                className={`${color.startsWith("#") ? "" : color} flex items-center justify-center overflow-hidden rounded-md cursor-pointer transition-all ${
+                                                    backColor === color
+                                                        ? "w-[48px] h-[48px] outline outline-2 outline-offset-2 outline-white"
+                                                        : "w-[36px] h-[36px]"
+                                                }`}
+                                                style={color.startsWith("#") ? { backgroundColor: color } : undefined}
+                                            >
+                                                <span className={`text-center text-[7px] font-bold leading-[8px] ${color === "bg-white" ? "text-zinc-900" : "text-white drop-shadow"} ${backColor === color ? "text-[10px] leading-[12px]" : ""}`}>
+                                                    {colorName}
+                                                </span>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
 
                             <div className="flex flex-col items-center gap-1.5">
                                 <p className="font-bold">The face</p>
                                 <div className="flex flex-row items-center justify-center flex-wrap gap-2">
-                                    {cardColors.map((color, idx) => (
-                                        <div
-                                            key={idx}
-                                            onClick={() => setFaceColor(color)}
-                                            className={`${color.startsWith("#") ? "" : color} rounded-md cursor-pointer transition-all ${
-                                                faceColor === color
-                                                    ? "w-[38px] h-[38px] outline outline-2 outline-offset-2 outline-white"
-                                                    : "w-[30px] h-[30px]"
-                                            }`}
-                                            style={color.startsWith("#") ? { backgroundColor: color } : undefined}
-                                        ></div>
-                                    ))}
+                                    {cardColors.map((color, idx) => {
+                                        const colorName = getCardColorName(color);
+
+                                        return (
+                                            <div
+                                                key={idx}
+                                                onClick={() => setFaceColor(color)}
+                                                className={`${color.startsWith("#") ? "" : color} flex items-center justify-center overflow-hidden rounded-md cursor-pointer transition-all ${
+                                                    faceColor === color
+                                                        ? "w-[48px] h-[48px] outline outline-2 outline-offset-2 outline-white"
+                                                        : "w-[36px] h-[36px]"
+                                                }`}
+                                                style={color.startsWith("#") ? { backgroundColor: color } : undefined}
+                                            >
+                                                <span className={`text-center text-[7px] font-bold leading-[8px] ${color === "bg-white" ? "text-zinc-900" : "text-white drop-shadow"} ${faceColor === color ? "text-[10px] leading-[12px]" : ""}`}>
+                                                    {colorName}
+                                                </span>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         </div>
@@ -417,11 +449,11 @@ export default function ProfilePage() {
                             ))}
                         </div>
 
-                        <div className="flex max-h-[60vh] flex-col gap-4 overflow-y-auto mb-6">
+                        <div className="flex max-h-[60vh] flex-col gap-6 overflow-y-auto mb-6">
                             {achievementProgress?.map(({ category, label, achievements: categoryAchievements }) => (
-                                <div key={category} className="flex flex-row items-start gap-1">
-                                    <h3 className="w-26 shrink-0 text-sm font-semibold">{label}</h3>
-                                    <div className="flex flex-row items-center justify-start flex-wrap gap-2">
+                                <div key={category} className="flex flex-col items-center gap-1">
+                                    <h3 className="text-sm font-semibold">{label}</h3>
+                                    <div className="flex flex-row items-center justify-center flex-wrap gap-2">
                                         {categoryAchievements.map((achievement) => {
                                             const material = rankMaterials[achievement.rank - 1];
 

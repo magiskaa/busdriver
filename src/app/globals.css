@@ -315,14 +315,6 @@ h2 {
 	sm:w-[48px] sm:h-[48px]
 }
 
-.card-icon {
-	@apply
-	text-white w-[36px] h-[36px]
-	hover:text-zinc-300
-	active:scale-[0.9]
-	sm:w-[44px] sm:h-[44px]
-}
-
 .menu-icon {
 	@apply
 	text-zinc-300 w-[28px] h-[28px] absolute top-2 right-0
@@ -331,12 +323,22 @@ h2 {
 	sm:!w-[40px] sm:!h-[40px]
 }
 
+.edit-icon {
+	@apply
+	text-green-400 w-[24px] h-[24px]
+	sm:w-[32px] sm:h-[32px]
+}
+
+.card-icon {
+	@apply
+	text-white w-[24px] h-[24px]
+	sm:w-[32px] sm:h-[32px]
+}
+
 .sign-out-icon {
 	@apply
-	text-red-700 !w-[36px] !h-[36px] absolute top-2 right-0
-	hover:text-red-600 
-	active:scale-[0.9]  
-	sm:!w-[44px] sm:!h-[44px]
+	text-red-700 w-[24px] h-[24px]
+	sm:!w-[32px] sm:!h-[32px]
 }
 
 .bug-icon {
