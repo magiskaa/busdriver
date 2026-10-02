@@ -11,17 +11,6 @@ import { ToastContainer, toast, Slide } from 'react-toastify';
 import { useGameEmotes } from "@/hooks/useGameEmotes";
 import { BiWinkSmile } from "react-icons/bi";
 
-const IMPORTANT_COLOR_CLASS: Record<string, string> = {
-    "bg-green-600": "!bg-green-600",
-    "bg-red-500": "!bg-red-500",
-    "bg-yellow-400": "!bg-yellow-400",
-    "bg-blue-600": "!bg-blue-600",
-    "bg-orange-400": "!bg-orange-400",
-    "bg-purple-600": "!bg-purple-600",
-    "bg-zinc-400": "!bg-zinc-400",
-    "bg-zinc-800": "!bg-zinc-800",
-    "bg-white": "!bg-white",
-};
 
 export default function GamePage({ params }: { params: Promise<{ pin: string }>; }) {
     const router = useRouter();
@@ -58,19 +47,21 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
     const [isEmote, setIsEmote] = useState<boolean>(false);
     const [isProfile, setIsProfile] = useState<boolean>(false);
     const [profileId, setProfileId] = useState<Id<"users"> | undefined>(undefined);
+    const achievementProgress = useQuery(
+        api.achievements.getAchievements,
+        profileId ? { userId: profileId } : "skip"
+    );
     const [sipDistribution, setSipDistribution] = useState<{
         total: number;
         assignments: Record<string, number>;
     } | null>(null);
+    const [playingCardIndex, setPlayingCardIndex] = useState<number | null>(null);
     const isResolvingDriveRef = useRef(false);
     const isFinalizingDriveRef = useRef(false);
     const { emotes, sendEmote } = useGameEmotes(
         gamePin,
         userId ?? undefined
     );
-
-    
-
     const availableEmotes = [
         "😂",
         "😀",
@@ -85,7 +76,17 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
         "👏",
         "💀",
     ];
-    
+
+    const rankMaterials = [
+        { name: "Wood", background: "linear-gradient(135deg, #d4a373 0%, #8b5a2b 45%, #5c371d 100%)" },
+        { name: "Iron", background: "linear-gradient(135deg, #87939b 0%, #4b5563 48%, #252b32 100%)" },
+        { name: "Bronze", background: "linear-gradient(135deg, #f0b477 0%, #b87333 48%, #75421f 100%)" },
+        { name: "Silver", background: "linear-gradient(135deg, #ffffff 0%, #cbd5e1 45%, #7c8794 100%)" },
+        { name: "Gold", background: "linear-gradient(135deg, #fff1a8 0%, #eab308 48%, #a16207 100%)" },
+        { name: "Platinum", background: "linear-gradient(135deg, #f8fafc 0%, #d5d9de 48%, #929ba5 100%)" },
+        { name: "Diamond", background: "linear-gradient(135deg, #ecfeff 0%, #67e8f9 45%, #0891b2 100%)" },
+    ];
+        
     const rowOfIndex = (idx: number) => {
         if (idx >= 10) return 5;
         if (idx >= 6) return 4;
@@ -93,7 +94,19 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
         if (idx >= 1) return 2;
         return 1;
     };
+    
+    const getCardColorClass = (color?: string) => {
+        if (color === "bg-blue-600") return "!bg-blue-600";
+        if (color === "bg-white") return "!bg-white";
+        return "";
+    };
 
+    const getCardColorTextClass = (color?: string) => {
+        if (color === "bg-blue-600") return "!text-blue-600";
+        if (color === "bg-white") return "!text-white";
+        return "";
+    };
+    
     const isHost = game?.host === user?._id;
     const cardCount = game?.base.cardCount;
     const playersReadyStart = game && game.players && game.base.ready ? game.players.every(player => game.base.ready.includes(player)) : false;
@@ -106,8 +119,8 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
     const isBaseGameDone = board && revealedCards.length === board.length;
     const playersReadyDrive = game && game.players && game.drive.ready ? game.players.every(player => game.drive.ready.includes(player)) : false;
     const tieBreakersRevealed = game && game.tie?.tiedPlayers.every(player => player.revealed === true);
-
-
+    
+    
     useEffect(() => {
         const intervalId = setInterval(() => setNowTs(Date.now()), 500);
         return () => clearInterval(intervalId);
@@ -250,7 +263,6 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
 		}
 	}
 
-
     if (game === null) {
         return (
             <main className="loading-main">
@@ -378,7 +390,8 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                     <div 
                         key={index} 
                         onClick={() => canReveal && userId && revealDriveCard({ pin: gamePin, userId: userId, index })}
-                        className={`card ${canReveal ? "border-white cursor-pointer hover:bg-blue-700 shadow-white/20" : cardsLocked ? "opacity-60 border-zinc-600 cursor-not-allowed" : "opacity-70 border-zinc-500"}`}
+                        className={`card ${getCardColorClass(cardColors?.backColor)} ${canReveal ? "border-white cursor-pointer hover:bg-blue-700 shadow-white/20" : cardsLocked ? "opacity-60 border-zinc-600 cursor-not-allowed" : "opacity-70 border-zinc-500"}`}
+                        style={cardColors?.backColor.startsWith("#") ? { backgroundColor: cardColors.backColor } : undefined}
                     >
                         <div className="card-middle">
                             <p className="card-middle-p">?</p>
@@ -390,7 +403,8 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
             return (
                 <div 
                     key={index} 
-                    className={`card-revealed ${isPenaltyRank ? "border-red-500 ring-2 ring-red-500 shadow-red-500/50" : cardsLocked ? "opacity-80 border-zinc-400" : "border-yellow-400 shadow-yellow-400/40"}`}
+                    className={`card-revealed card-flip-in ${getCardColorClass(cardColors?.faceColor)} ${isPenaltyRank ? "border-red-500 ring-2 ring-red-500 shadow-red-500/50" : cardsLocked ? "opacity-80 border-zinc-400" : "border-yellow-400 shadow-yellow-400/40"}`}
+                    style={cardColors?.faceColor.startsWith("#") ? { backgroundColor: cardColors.faceColor } : undefined}
                 >
                     <p className={`card-revealed-p ${isRed ? "text-red-600" : "text-black"}`}>
                         {card}
@@ -403,7 +417,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
 
         return (
             <main className="!py-0">
-                <div className="players-hands-div wrap">
+                <div className="players-hands-div wrap !overflow-visible">
                     {players?.map((player, idx) => {
                         if (player._id === loser) return null;
                         const playerSips = game.base.sips?.find(user => user.userId === player._id);
@@ -433,7 +447,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                                     .map((emote) => (
                                         <div
                                             key={emote.id}
-                                            className="pointer-events-none absolute left-8 bottom-0 z-30 -translate-x-1/2 text-4xl animate-emote-pop"
+                                            className="pointer-events-none absolute left-4 -bottom-13 z-30 text-6xl animate-emote-pop"
                                         >
                                             {emote.emoji}
                                         </div>
@@ -462,7 +476,9 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                     </div>
 
                     {game.drive.finishAt && (
-                        <p className="text-center mt-2 text-3xl font-black sm:mt-4 sm:text-4xl">Game Finished!</p>
+                        <div className="fixed inset-0 bg-black/30 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+                            <p className="text-center mt-2 text-3xl font-black sm:mt-4 sm:text-4xl">Game Finished!</p>
+                        </div>
                     )}
 
                     <div 
@@ -487,7 +503,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                     }
 
                     <p className="flex-1 text-zinc-400 text-xs sm:text-base">LOSER</p>
-                    <p className="text-2xl font-bold text-blue-500 mb-2 sm:text-3xl">{players?.find(player => player._id === loser)?.username ?? "Username"}</p>
+                    <p className={`text-2xl font-bold mb-2 sm:text-3xl ${getCardColorTextClass(cardColors?.backColor)}`} style={cardColors?.backColor.startsWith("#") ? { color: cardColors.backColor } : undefined}>{players?.find(player => player._id === loser)?.username ?? "Username"}</p>
                     
                     <strong className="relative text-4xl text-white sm:text-5xl">{game.drive.sips}
                         <span className="absolute -right-9 text-zinc-400 text-sm sm:text-base">
@@ -500,23 +516,25 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                     <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
                         <div className="main-div max-w-md !p-2 sm:!p-3">
                             <h2 className="text-center py-1">Emote</h2>
-                            <p className="text-blue-500 text-center font-bold mb-3">
+                            <p 
+                                className={`text-center font-bold mb-3 ${getCardColorTextClass(cardColors?.backColor)}`}
+                                style={cardColors?.backColor.startsWith("#") ? { color: cardColors.backColor } : undefined}
+                            >
                                 Choose your emote
                             </p>
                             
                             <div className="flex flex-wrap justify-center gap-2 pb-4">
                                 {availableEmotes.map((emoji) => (
-                                    <button
+                                    <div
                                         key={emoji}
-                                        type="button"
                                         onClick={() => {
                                             sendEmote(emoji);
                                             setIsEmote(false);
                                         }}
-                                        className="!m-0 !h-10 !w-10 !rounded-full !bg-zinc-800 !p-0 text-2xl"
+                                        className="flex items-center justify-center w-12 h-12 rounded-full bg-zinc-800 text-2xl"
                                     >
                                         {emoji}
-                                    </button>
+                                    </div>
                                 ))}
                             </div>
                             
@@ -541,7 +559,8 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                     <div 
                         key={index} 
                         onClick={() => userId && pickCard({ pin: gamePin, userId: userId, index })}
-                        className="card"
+                        className={`card ${getCardColorClass(cardColors?.backColor)}`}
+                        style={cardColors?.backColor.startsWith("#") ? { backgroundColor: cardColors.backColor } : undefined}
                     >
                         <div className="card-middle">
                             <p className="card-middle-p">?</p>
@@ -553,7 +572,8 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
             return (
                 <div 
                     key={index}
-                    className="bg-blue-800 rounded-lg w-[56px] h-[77px] flex items-center justify-center shadow-md shrink-0 border-2 transition-all border-white shadow-white/20 border-yellow-400 ring-3 ring-yellow-400 sm:w-[80px] sm:h-[110px]"
+                    className={`bg-blue-800 rounded-lg w-[56px] h-[77px] flex items-center justify-center shadow-md shrink-0 border-2 transition-all border-white shadow-white/20 border-yellow-400 ring-3 ring-yellow-400 sm:w-[80px] sm:h-[110px] ${getCardColorClass(cardColors?.backColor)}`}
+                    style={cardColors?.backColor.startsWith("#") ? { backgroundColor: cardColors.backColor } : undefined}
                 >
                     <div className="card-middle">
                         <p className="card-middle-p">?</p>
@@ -590,36 +610,40 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                         const isLoser = game.drive.loser === player._id;
 
                         return (
-                            <div key={idx} className="flex flex-col items-center justify-center gap-1.5 p-1.5 w-[110px] bg-zinc-800 rounded-lg border border-zinc-700 sm:w-[130px] sm:gap-3 sm:p-3">
+                            <div key={idx} className="flex flex-col items-center justify-center gap-2 p-2 w-[115px] bg-zinc-800 rounded-lg border border-zinc-700 sm:w-[130px] sm:gap-3 sm:p-3">
                                 <p className="text-base font-semibold truncate max-w-[95px] sm:text-lg sm:max-w-[115px]">{player.username}</p>
                                 {card && revealed ? (
-                                    <div className={`card-revealed ${isLoser ? "border-red-500 ring-3 ring-red-500 shadow-red-500/50" : ""}`}>
+                                    <div 
+                                        className={`card-revealed card-flip-in ${getCardColorClass(cardColors?.faceColor)} ${isLoser ? "border-red-500 ring-3 ring-red-500 shadow-red-500/50" : ""}`}
+                                        style={cardColors?.faceColor.startsWith("#") ? { backgroundColor: cardColors.faceColor } : undefined}
+                                    >
                                         <p className={`card-revealed-p ${isRed ? "text-red-600" : "text-black"}`}>
                                             {card}
                                         </p>
                                     </div>
                                 ) : card ? (
                                     <div 
-                                        className="card"
+                                        className={`card ${getCardColorClass(cardColors?.backColor)}`}
                                         onClick={() => userId && tiedPlayer?.cardPicked !== undefined && revealTieBreaker({ pin: gamePin, userId: userId })}
+                                        style={cardColors?.backColor.startsWith("#") ? { backgroundColor: cardColors.backColor } : undefined}
                                     >
                                         <div className="card-middle">
                                             <p className="card-middle-p">?</p>
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="rounded-lg w-[60px] h-[83px] shadow-md shrink-0 border-2 transition-all border-zinc-500 shadow-white/10"></div>
+                                    <div className="rounded-lg w-[56px] h-[77px] shadow-md shrink-0 border-2 transition-all border-zinc-500 shadow-white/10 sm:w-[80px] sm:h-[110px]"></div>
                                 )}
                             </div>
                         )
                     })}
                 </div>
 
-                {tieBreakersRevealed && (
+                {!tieBreakersRevealed && (
                     <div className="flex flex-col items-center justify-center sm:mt-2">
                         <p className="text-sm flex-1 text-zinc-400 sm:text-lg">LOSER</p>
-                        <p className="text-2xl font-semibold mb-3 sm:text-3xl sm:mb-6">{players?.find(p => p._id === game.drive.loser)?.username || "magiskaa"}</p>
-                        <p className="text-xl font-bold text-center text-blue-500 sm:text-2xl">The driving will begin in 5 seconds...</p>
+                        <p className="text-2xl font-semibold mb-6 sm:text-3xl sm:mb-8">{players?.find(p => p._id === game.drive.loser)?.username || "Username"}</p>
+                        <p className={`text-xl font-bold text-center ${getCardColorTextClass(cardColors?.backColor)} sm:text-2xl`} style={cardColors?.backColor.startsWith("#") ? { color: cardColors.backColor } : undefined}>The driving will begin in 5 seconds...</p>
                     </div>
                 )}
             </main>
@@ -656,7 +680,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                     <div 
                         key={index} 
                         onClick={() => revealCard({ pin: gamePin, index })}
-                        className={`card ${cardColors ? IMPORTANT_COLOR_CLASS[cardColors.backColor] ?? "" : ""} ${isActiveRow ? "card-active" : "card-inactive"}`}
+                        className={`card ${getCardColorClass(cardColors?.backColor)} ${isActiveRow ? "card-active" : "card-inactive"}`}
                         style={cardColors?.backColor.startsWith("#") ? { backgroundColor: cardColors.backColor } : undefined}
                     >
                         <div className="card-middle">
@@ -669,7 +693,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
             return (
                 <div 
                     key={index} 
-                    className={`card-revealed ${cardColors ? IMPORTANT_COLOR_CLASS[cardColors.faceColor] ?? "" : ""} ${isActiveRow ? "card-revealed-active" : "card-inactive"}`}
+                    className={`card-revealed card-flip-in ${getCardColorClass(cardColors?.faceColor)} ${isActiveRow ? "card-revealed-active" : "card-inactive"}`}
                     style={cardColors?.faceColor.startsWith("#") ? { backgroundColor: cardColors.faceColor } : undefined}
                 >
                     <p className={`card-revealed-p ${isRed ? "text-red-600" : "text-black"}`}>
@@ -688,7 +712,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                     toastClassName="!rounded-sm !bg-green-600 !text-white"
                 />
 
-                <div className="players-hands-div wrap">
+                <div className="players-hands-div wrap !overflow-visible">
                     {players?.map((player, idx) => {
                         if (player._id === userId) return null;
                         const hand = game.base.playerHands?.find(hand => hand.userId === player._id);
@@ -717,7 +741,11 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                                 <div className="flex flex-row -space-x-0.75">
                                     {hand && hand.cards.length ? (
                                         hand?.cards.map((_, idx) => (
-                                            <div key={idx} className="bg-blue-800 rounded-sm w-[12px] h-[19px] border border-white/30 shadow-sm shadow-black/50 sm:w-[15px] sm:h-[24px]"></div>
+                                            <div 
+                                                key={idx} 
+                                                className={`rounded-sm w-[12px] h-[19px] border border-white/60 shadow-sm shadow-black/50 sm:w-[15px] sm:h-[24px] ${getCardColorClass(cardColors?.backColor)}`}
+                                                style={cardColors?.backColor.startsWith("#") ? { backgroundColor: cardColors.backColor } : undefined}
+                                            ></div>
                                         ))
                                     ) : (
                                         <p className=""></p>
@@ -729,7 +757,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                                     .map((emote) => (
                                         <div
                                             key={emote.id}
-                                            className="pointer-events-none absolute left-8 bottom-0 z-30 -translate-x-1/2 text-4xl animate-emote-pop"
+                                            className="pointer-events-none absolute left-4 -bottom-13 z-30 text-6xl animate-emote-pop"
                                         >
                                             {emote.emoji}
                                         </div>
@@ -775,7 +803,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                     </div>
                     
                     <div 
-                        className="absolute w-[50px] h-[50px] flex items-center justify-center bg-zinc-800/70 right-0 rounded-full shadow-md shadow-zinc-600/30 active:scale-[0.95] sm:w-[70px] sm:h-[70px]"
+                        className="absolute w-[50px] h-[50px] flex items-center justify-center bg-zinc-800/70 right-0 rounded-full active:scale-[0.95] sm:w-[70px] sm:h-[70px]"
                         onClick={() => setIsEmote(true)}
                     >
                         <BiWinkSmile className="bug-icon" />
@@ -787,23 +815,25 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                     <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
                         <div className="main-div max-w-md !p-2 sm:!p-3">
                             <h2 className="text-center py-1">Emote</h2>
-                            <p className="text-blue-500 text-center font-bold mb-3">
+                            <p 
+                                className={`text-center font-bold mb-3 ${getCardColorTextClass(cardColors?.backColor)}`}
+                                style={cardColors?.backColor.startsWith("#") ? { color: cardColors.backColor } : undefined}
+                            >
                                 Choose your emote
                             </p>
                             
-                            <div className="flex flex-wrap justify-center gap-2 pb-4">
+                            <div className="flex flex-wrap justify-center gap-2 pt-1 pb-6">
                                 {availableEmotes.map((emoji) => (
-                                    <button
+                                    <div
                                         key={emoji}
-                                        type="button"
                                         onClick={() => {
                                             sendEmote(emoji);
                                             setIsEmote(false);
                                         }}
-                                        className="!m-0 !h-10 !w-10 !rounded-full !bg-zinc-800 !p-0 text-2xl"
+                                        className="flex items-center justify-center w-12 h-12 rounded-full bg-zinc-800 text-2xl"
                                     >
                                         {emoji}
-                                    </button>
+                                    </div>
                                 ))}
                             </div>
                             
@@ -822,7 +852,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                         .map((emote) => (
                             <div
                                 key={emote.id}
-                                className="pointer-events-none absolute bottom-full z-30 -translate-x-1/2 pb-3 text-6xl animate-emote-pop"
+                                className="pointer-events-none absolute bottom-full z-30 translate-x-2 pb-3 text-8xl animate-emote-pop"
                             >
                                 {emote.emoji}
                             </div>
@@ -847,10 +877,11 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                         </div>
                     </div>
 
-                    <div className="flex flex-row justify-center gap-2.5 overflow-x-auto w-full pt-2.5">
+                    <div className="flex flex-row justify-center gap-2.5 overflow-visible w-full pt-2.5">
                         {myHand?.map((card, idx) => {
                             const isRed = card.includes("♡") || card.includes("♢");
                             const playerCardRank = card.replace(/[♠♣♡♢]/g, "");
+                            const isPlayingCard = playingCardIndex === idx;
                             
                             const canPlay = revealedCards.some(idx => {
                                 if (rowOfIndex(idx) !== lastRevealedRow) return false;
@@ -861,7 +892,13 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                                 <div 
                                     key={idx} 
                                     onClick={async () => {
-                                        if (canPlay && userId) {
+                                        if (!canPlay || !userId || playingCardIndex !== null) return;
+
+                                        setPlayingCardIndex(idx);
+                                        try {
+                                            if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+                                                await new Promise(resolve => setTimeout(resolve, 400));
+                                            }
                                             await playCard({ pin: gamePin, userId: userId, card });
                                             const sips = (6 - lastRevealedRow) * 2;
                                             const initialAssignments: Record<string, number> = {};
@@ -870,9 +907,11 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                                                 total: sips,
                                                 assignments: initialAssignments
                                             });
+                                        } finally {
+                                            setPlayingCardIndex(null);
                                         }
                                     }}
-                                    className={`card-revealed ${cardColors ? IMPORTANT_COLOR_CLASS[cardColors.faceColor] ?? "" : ""} ${canPlay ? "cursor-pointer border-yellow-400 ring-2 ring-yellow-400 -translate-y-1.5 shadow-yellow-400/40" : "opacity-85 border-zinc-300"}`}
+                                    className={`card-revealed ${getCardColorClass(cardColors?.faceColor)} ${isPlayingCard ? "card-play-out" : canPlay && playingCardIndex === null ? "cursor-pointer border-yellow-400 ring-2 ring-yellow-400 -translate-y-1.5 shadow-yellow-400/40" : "opacity-85 border-zinc-300"}`}
                                     style={cardColors?.faceColor.startsWith("#") ? { backgroundColor: cardColors.faceColor } : undefined}
                                 >
                                     <p className={`card-revealed-p ${isRed ? "text-red-600" : "text-black"}`}>
@@ -891,7 +930,10 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                     <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
                         <div className="main-div max-w-md !p-2 sm:!p-3">
                             <h2 className="text-center py-1">Distribute Sips</h2>
-                            <p className="text-blue-500 text-center font-bold mb-3">
+                            <p 
+                                className={`text-blue-500 text-center font-bold mb-3 ${getCardColorTextClass(cardColors?.backColor)}`}
+                                style={cardColors?.backColor.startsWith("#") ? { color: cardColors.backColor } : undefined}
+                            >
                                 Sips: {Object.values(sipDistribution.assignments).reduce((a, b) => a + b, 0)} / {sipDistribution.total}
                             </p>
                             
@@ -937,7 +979,8 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                                                             });
                                                         }
                                                     }}
-                                                    className="!w-[40px] !h-[40px] !rounded-full !bg-blue-700 flex items-center justify-center !shadow-blue-600/20 hover:!bg-blue-600 sm:!w-[50px] sm:!h-[50px]"
+                                                    className={`!w-[40px] !h-[40px] !rounded-full flex items-center justify-center ${getCardColorClass(cardColors?.backColor)} sm:!w-[50px] sm:!h-[50px]`}
+                                                    style={cardColors?.backColor.startsWith("#") ? { backgroundColor: cardColors.backColor } : undefined}
                                                 >
                                                     <IoRemove size={25} />
                                                 </button>
@@ -957,7 +1000,8 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                                                             });
                                                         }
                                                     }}
-                                                    className="!w-[40px] !h-[40px] !rounded-full !bg-blue-700 flex items-center justify-center !shadow-blue-600/20 hover:!bg-blue-600 sm:!w-[50px] sm:!h-[50px]"
+                                                    className={`!w-[40px] !h-[40px] !rounded-full flex items-center justify-center ${getCardColorClass(cardColors?.backColor)} sm:!w-[50px] sm:!h-[50px]`}
+                                                    style={cardColors?.backColor.startsWith("#") ? { backgroundColor: cardColors.backColor } : undefined}
                                                 >
                                                     <IoAdd size={25} />
                                                 </button>
@@ -1003,6 +1047,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
             received: profilePlayer?.sipsReceived,
             given: profilePlayer?.sipsGiven,
             drivingSips: profilePlayer?.drivingSips,
+            drivingRecord: profilePlayer?.drivingRecord,
         }
 
         return (
@@ -1037,7 +1082,11 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                         <h2>{players?.length} / 6</h2>
                         <div className="flex flex-row items-center justify-center -space-x-0.5 w-[60px]">
                             {Array.from({ length: cardCount || 5 }).map((_, idx) => (
-                                <div key={idx} className="bg-blue-800 rounded-sm w-[12px] h-[19px] border border-white/30 shadow-sm shadow-black/50 sm:w-[15px] sm:h-[24px]"></div>
+                                <div 
+                                    key={idx} 
+                                    className={`rounded-sm w-[12px] h-[19px] border border-white/60 shadow-sm shadow-black/50 sm:w-[15px] sm:h-[24px] ${getCardColorClass(cardColors?.backColor)}`}
+                                    style={cardColors?.backColor.startsWith("#") ? { backgroundColor: cardColors.backColor } : undefined}
+                                ></div>
                             ))}
                         </div>
                     </div>
@@ -1115,7 +1164,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                 {isProfile && profileId && (
                     <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
                         <div className="main-div max-w-md !p-2 relative sm:!p-3">
-                            <div className="player-name-div pt-1.25 !pb-4 px-2">
+                            <div className="player-name-div pt-1.25 !pb-3 px-2">
                                 <div className="profile-pic-div-non-absolute relative !w-[72px] !h-[72px]">
                                     {profileImageUrl ? (
                                         <Image 
@@ -1133,24 +1182,47 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                                 </p>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-y-4 border-t border-zinc-700 pt-2.5 pb-4">
+                            <div className="border-t border-zinc-700 py-2.5 mt-3 sm:py-4">
+                                <div className="flex flex-row items-start justify-between gap-2">
+                                    {achievementProgress?.map(({ category, label, best }) => {
+                                        const material = best ? rankMaterials[best.rank - 1] : null;
+
+                                        return (
+                                            <div key={category} className="flex w-[65px] flex-col items-center gap-1">
+                                                <div
+                                                    className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/20 text-sm font-bold shadow-inner shadow-black/30"
+                                                    style={{ background: material?.background ?? "#27272a" }}
+                                                >
+                                                    {best ? best.required : "—"}
+                                                </div>
+                                                <span className="text-center text-[9px] leading-tight text-zinc-400">{label}</span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-y-2 border-t border-zinc-700 pt-2 pb-4">
                                 <p className="profile-stats-p">
                                     GAMES: <strong className="profile-stats-strong">{profileStats.games}</strong>
-                                </p>
-                                <p className="profile-stats-p">
-                                    SIPS GIVEN: <strong className="profile-stats-strong">{profileStats.given}</strong>
-                                </p>
-                                <p className="profile-stats-p">
-                                    LOST GAMES: <strong className="profile-stats-strong">{profileStats.lostGames}</strong>
-                                </p>
-                                <p className="profile-stats-p">
-                                    SIPS RECEIVED: <strong className="profile-stats-strong">{profileStats.received}</strong>
                                 </p>
                                 <p className="profile-stats-p">
                                     L%: <strong className="profile-stats-strong">{profileStats ? ((profileStats.lostGames * 100) / (profileStats.games || 1)).toFixed(1) : 0}%</strong>
                                 </p>
                                 <p className="profile-stats-p">
+                                    LOST GAMES: <strong className="profile-stats-strong">{profileStats.lostGames}</strong>
+                                </p>
+                                <p className="profile-stats-p">
+                                    SIPS GIVEN: <strong className="profile-stats-strong">{profileStats.given}</strong>
+                                </p>
+                                <p className="profile-stats-p">
                                     DRIVING SIPS: <strong className="profile-stats-strong">{profileStats.drivingSips}</strong>
+                                </p>
+                                <p className="profile-stats-p">
+                                    SIPS RECEIVED: <strong className="profile-stats-strong">{profileStats.received}</strong>
+                                </p>
+                                <p className="profile-stats-p">
+                                    DRIVING RECORD: <strong className="profile-stats-strong">{profileStats.drivingRecord}</strong>
                                 </p>
                             </div>
 

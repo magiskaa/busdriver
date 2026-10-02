@@ -196,7 +196,7 @@ export default function Home() {
 							Join back to a game that is not yet finished.
 						</p>
 						<button
-							className="mt-2 sm:mt-4 sm:py-4"
+							className="mt-2 sm:mt-4 sm:py-2"
 							disabled={!ongoingGame}
 							onClick={handleOngoing}
 							>
@@ -208,7 +208,7 @@ export default function Home() {
 						<p className="main-p">
 							Join a game by entering it&apos;s 4 character PIN code.
 						</p>
-						<form className="mt-2 flex flex-col gap-3 sm:mt-4 sm:gap-4" onSubmit={handleJoining}>
+						<form className="mt-2 flex flex-col sm:mt-2" onSubmit={handleJoining}>
 							<div className="grid grid-cols-2 gap-x-3">
 								<input
 									className="uppercase"
@@ -220,7 +220,6 @@ export default function Home() {
 								/>
 
 								<button
-									className=""
 									type="submit"
 									disabled={isJoining || ongoingGame ? true : false || pin.length !== 4}
 								>
@@ -235,7 +234,7 @@ export default function Home() {
 					Create a new game and share the generated PIN code to your friends.
 				</p>
 				<button
-					className="mt-2 sm:mt-4 sm:py-4"
+					className="mt-2 sm:!mt-2"
 					disabled={ongoingGame ? true : false}
 					onClick={handleCreating}
 					>
@@ -246,8 +245,11 @@ export default function Home() {
 			<div className="main-div">
 				<h2 className="-mt-1">News and updates</h2>
 
-				<div className="flex flex-col items-center justify-start h-[160px] overflow-y-auto border-t border-zinc-700 pt-0 mt-1.5 sm:h-[350px]">
+				<div className="flex flex-col items-center justify-start h-[160px] overflow-y-auto border-t border-zinc-700 mt-1.5 sm:h-[350px]">
 					<p className="main-p !mt-0 !border-0">
+						2.10.2026 - Added achievements and driving record to profile when inspecting it, added animations to card revealing and playing, added card colors to tied and driving phases, made the emotes bigger, fixed the toast notification, changed some texts and buttons to card back color. 
+					</p>
+					<p className="main-p">
 						30.9.2026 - Added achievements and rewards, added driving record stat, modified home screen and profile screen, optimized database calls, added card color customization (accessible from profile).
 					</p>
 					<p className="main-p">

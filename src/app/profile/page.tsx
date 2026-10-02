@@ -23,7 +23,7 @@ export default function ProfilePage() {
     const user = useQuery(api.users.getUser);
     const stats = useQuery(api.stats.getStats, userId ? { userId: userId } : "skip");
     const games = useQuery(api.stats.getGames, userId ? { userId: userId } : "skip");
-    const achievementProgress = useQuery(api.achievements.getAchievements);
+    const achievementProgress = useQuery(api.achievements.getAchievements, {});
     
     const updateUser = useMutation(api.users.update);
     const generateUploadUrl = useMutation(api.users.generateUploadUrl);
@@ -234,7 +234,6 @@ export default function ProfilePage() {
                             );
                         })}
                     </div>
-
                 </div>
                 
                 <div className="grid grid-cols-2 gap-y-2 border-t border-zinc-700 py-2.5 sm:gap-y-3 sm:py-4">

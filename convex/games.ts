@@ -80,6 +80,7 @@ export const getPlayers = query({
 					sipsReceived: stats?.sipsReceived ?? 0,
 					sipsGiven: stats?.sipsGiven ?? 0,
 					drivingSips: stats?.drivingSips ?? 0,
+					drivingRecord: stats?.drivingRecord ?? 0,
 				};
 			})
 		);
