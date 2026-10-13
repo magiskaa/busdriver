@@ -639,7 +639,7 @@ export default function GamePage({ params }: { params: Promise<{ pin: string }>;
                     })}
                 </div>
 
-                {!tieBreakersRevealed && (
+                {tieBreakersRevealed && (
                     <div className="flex flex-col items-center justify-center sm:mt-2">
                         <p className="text-sm flex-1 text-zinc-400 sm:text-lg">LOSER</p>
                         <p className="text-2xl font-semibold mb-6 sm:text-3xl sm:mb-8">{players?.find(p => p._id === game.drive.loser)?.username || "Username"}</p>

@@ -237,7 +237,7 @@ export default function Home() {
 					className="mt-2 sm:!mt-2"
 					disabled={ongoingGame ? true : false}
 					onClick={handleCreating}
-					>
+				>
 					Create
 				</button>
 			</div>
